@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS - Procedural 3D Roguelike</title>
+    <title>EVOLUTION - AI Ecosystem Simulator</title>
     <style>
         * {
             margin: 0;
@@ -12,932 +12,753 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: #000;
+            font-family: 'Arial', sans-serif;
+            background: #0a0a0a;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #0ff;
+            height: 100vh;
+            color: #00ff00;
             overflow: hidden;
         }
 
-        #gameContainer {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            background: linear-gradient(135deg, #000 0%, #001a1a 100%);
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .hud {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            font-size: 12px;
-        }
-
-        .stats {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 20, 20, 0.8);
-            border: 2px solid #0f0;
-            padding: 15px;
-            line-height: 1.8;
-            max-width: 300px;
-        }
-
-        .mini-map {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 150px;
-            height: 150px;
-            border: 2px solid #0f0;
-            background: rgba(0, 10, 10, 0.9);
-        }
-
-        .compass {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            background: rgba(0, 20, 20, 0.8);
-            border: 2px solid #0f0;
-            padding: 10px 20px;
-        }
-
-        .objective {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 20, 20, 0.8);
-            border: 2px solid #0f0;
-            padding: 15px;
-            max-width: 250px;
-            line-height: 1.6;
-        }
-
-        .crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 2px solid #0f0;
-            pointer-events: none;
-        }
-
-        .crosshair::before,
-        .crosshair::after {
-            content: '';
-            position: absolute;
-            background: #0f0;
-        }
-
-        .crosshair::before {
-            width: 10px;
-            height: 2px;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .crosshair::after {
-            width: 2px;
-            height: 10px;
-            left: 50%;
-            top: 15px;
-            transform: translateX(-50%);
-        }
-
-        .notification {
-            position: absolute;
-            top: 200px;
-            left: 20px;
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #0f0;
-            padding: 10px;
-            font-size: 11px;
-            max-width: 250px;
-            max-height: 150px;
-            overflow-y: auto;
-            animation: slideIn 0.3s;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-300px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .floor-label {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #0f0;
-            text-shadow: 0 0 20px #0f0;
-        }
-
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        #canvas {
+            flex: 1;
             background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
-            color: #0f0;
+            border-right: 2px solid #00ff00;
         }
 
-        .loading-screen.hidden {
-            display: none;
-        }
-
-        .loading-bar {
+        .sidebar {
             width: 300px;
-            height: 20px;
-            border: 2px solid #0f0;
-            margin: 20px 0;
+            background: #111;
+            border-left: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .loading-bar-fill {
+        .panel {
+            border: 2px solid #00ff00;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.02);
+        }
+
+        .panel-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: 14px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+
+        .stat-label {
+            color: #00ff00;
+        }
+
+        .stat-value {
+            color: #ff0;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        button {
+            padding: 8px;
+            background: #001a00;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+        }
+
+        .log {
+            font-size: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #00ff00;
+            padding: 8px;
+            background: rgba(0, 255, 0, 0.02);
+            line-height: 1.3;
+        }
+
+        .log-entry {
+            margin: 3px 0;
+            color: #00ff00;
+        }
+
+        .speed-indicator {
+            display: flex;
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        .speed-bar {
+            flex: 1;
+            height: 6px;
+            background: #003300;
+            border: 1px solid #00ff00;
+        }
+
+        .speed-fill {
             height: 100%;
-            background: #0f0;
+            background: #00ff00;
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.1s;
+        }
+
+        .graph {
+            width: 100%;
+            height: 150px;
+            background: #003300;
+            border: 1px solid #00ff00;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .instructions {
+            font-size: 11px;
+            line-height: 1.5;
+            color: #00ff00;
+        }
+
+        .generation-counter {
+            font-size: 16px;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
-        <div class="hud">
-            <div class="loading-screen" id="loadingScreen">
-                <div>NEXUS v2.1 INITIALIZING...</div>
-                <div class="loading-bar">
-                    <div class="loading-bar-fill" id="loadingBar"></div>
-                </div>
-                <div id="loadingText">Generating procedural dungeon...</div>
+    <canvas id="canvas"></canvas>
+    <div class="sidebar">
+        <div class="generation-counter" id="generationCounter">GENERATION 0</div>
+
+        <div class="panel">
+            <div class="panel-title">POPULATION STATS</div>
+            <div class="stat">
+                <span class="stat-label">Herbivores:</span>
+                <span class="stat-value" id="herbCount">0</span>
             </div>
-            <div class="stats" id="stats"></div>
-            <canvas id="miniMap" class="mini-map"></canvas>
-            <div class="compass" id="compass"></div>
-            <div class="objective" id="objective"></div>
-            <div class="notification" id="notification"></div>
-            <div class="crosshair"></div>
-            <div class="floor-label" id="floorLabel"></div>
+            <div class="stat">
+                <span class="stat-label">Carnivores:</span>
+                <span class="stat-value" id="carnCount">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Food:</span>
+                <span class="stat-value" id="foodCount">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avg Speed (H):</span>
+                <span class="stat-value" id="herbSpeed">0.0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avg Speed (C):</span>
+                <span class="stat-value" id="carnSpeed">0.0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avg Size (H):</span>
+                <span class="stat-value" id="herbSize">0.0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Avg Size (C):</span>
+                <span class="stat-value" id="carnSize">0.0</span>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">EVOLUTION GRAPH</div>
+            <div class="graph">
+                <svg id="populationGraph"></svg>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">SIMULATION SPEED</div>
+            <div class="slider-container">
+                <label>Game Speed: <span id="speedValue">1</span>x</label>
+                <input type="range" id="speedSlider" min="1" max="5" value="1">
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">CONTROLS</div>
+            <div class="controls">
+                <button id="pauseBtn">PAUSE</button>
+                <button id="resetBtn">RESET</button>
+                <button id="addFoodBtn">ADD FOOD</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">EVENT LOG</div>
+            <div class="log" id="eventLog"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">INFO</div>
+            <div class="instructions">
+                Watch as herbivores and carnivores evolve in real-time. Traits like speed and size naturally select based on survival. Pure genetic algorithm simulation.
+            </div>
         </div>
     </div>
 
     <script>
         // ============================================
-        // NEXUS - PROCEDURAL 3D ROGUELIKE DUNGEON
+        // EVOLUTION SIMULATOR - AI GENETIC ALGORITHM
         // ============================================
 
-        const canvas = document.getElementById('gameCanvas');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const miniMapCanvas = document.getElementById('miniMap');
-        const miniMapCtx = miniMapCanvas.getContext('2d');
 
-        // Responsive sizing
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
+            canvas.width = window.innerWidth - 300;
             canvas.height = window.innerHeight;
-            miniMapCanvas.width = 150;
-            miniMapCanvas.height = 150;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
         // ============================================
-        // SEEDED RANDOM NUMBER GENERATOR (Procedural)
+        // SIMULATION STATE
         // ============================================
-        class SeededRandom {
-            constructor(seed) {
-                this.seed = seed;
+        const simulation = {
+            generation: 0,
+            paused: false,
+            speed: 1,
+            creatures: [],
+            food: [],
+            history: {
+                herbCount: [],
+                carnCount: [],
+                herbSpeed: [],
+                carnSpeed: [],
+                herbSize: [],
+                carnSize: []
             }
-
-            next() {
-                this.seed = (this.seed * 9301 + 49297) % 233280;
-                return this.seed / 233280;
-            }
-
-            range(min, max) {
-                return min + this.next() * (max - min);
-            }
-
-            intRange(min, max) {
-                return Math.floor(this.range(min, max + 1));
-            }
-        }
+        };
 
         // ============================================
-        // PROCEDURAL DUNGEON GENERATION
+        // CREATURE CLASS - GENETIC ALGORITHM
         // ============================================
-        class DungeonGenerator {
-            constructor(width, height, seed) {
-                this.width = width;
-                this.height = height;
-                this.rng = new SeededRandom(seed);
-                this.grid = Array(height).fill(0).map(() => Array(width).fill(1)); // 1 = wall
-                this.generate();
-            }
-
-            generate() {
-                // Cellular automata dungeon generation
-                this.carveCaves();
-                this.connectCaves();
-                this.placeRooms();
-            }
-
-            carveCaves() {
-                for (let y = 1; y < this.height - 1; y++) {
-                    for (let x = 1; x < this.width - 1; x++) {
-                        if (this.rng.next() < 0.4) {
-                            this.grid[y][x] = 0; // 0 = floor
-                        }
-                    }
-                }
-
-                // Smooth with cellular automata
-                for (let iter = 0; iter < 3; iter++) {
-                    const newGrid = JSON.parse(JSON.stringify(this.grid));
-                    for (let y = 1; y < this.height - 1; y++) {
-                        for (let x = 1; x < this.width - 1; x++) {
-                            const neighbors = this.countWallNeighbors(x, y);
-                            if (neighbors > 4) {
-                                newGrid[y][x] = 1;
-                            } else if (neighbors < 2) {
-                                newGrid[y][x] = 0;
-                            }
-                        }
-                    }
-                    this.grid = newGrid;
-                }
-            }
-
-            countWallNeighbors(x, y) {
-                let count = 0;
-                for (let dy = -1; dy <= 1; dy++) {
-                    for (let dx = -1; dx <= 1; dx++) {
-                        if (dx === 0 && dy === 0) continue;
-                        const nx = x + dx, ny = y + dy;
-                        if (nx < 0 || nx >= this.width || ny < 0 || ny >= this.height) count++;
-                        else if (this.grid[ny][nx] === 1) count++;
-                    }
-                }
-                return count;
-            }
-
-            connectCaves() {
-                const visited = Array(this.height).fill(0).map(() => Array(this.width).fill(false));
-                let regions = [];
-                let regionId = 0;
-
-                for (let y = 1; y < this.height - 1; y++) {
-                    for (let x = 1; x < this.width - 1; x++) {
-                        if (!visited[y][x] && this.grid[y][x] === 0) {
-                            const region = [];
-                            this.floodFill(x, y, visited, region);
-                            if (region.length > 5) {
-                                regions.push(region);
-                                regionId++;
-                            }
-                        }
-                    }
-                }
-
-                // Connect largest regions
-                if (regions.length > 1) {
-                    regions.sort((a, b) => b.length - a.length);
-                    for (let i = 0; i < regions.length - 1; i++) {
-                        const from = regions[i][Math.floor(this.rng.next() * regions[i].length)];
-                        const to = regions[i + 1][Math.floor(this.rng.next() * regions[i + 1].length)];
-                        this.carvePath(from[0], from[1], to[0], to[1]);
-                    }
-                }
-            }
-
-            floodFill(x, y, visited, region) {
-                if (x < 0 || x >= this.width || y < 0 || y >= this.height) return;
-                if (visited[y][x] || this.grid[y][x] === 1) return;
-                visited[y][x] = true;
-                region.push([x, y]);
-                this.floodFill(x + 1, y, visited, region);
-                this.floodFill(x - 1, y, visited, region);
-                this.floodFill(x, y + 1, visited, region);
-                this.floodFill(x, y - 1, visited, region);
-            }
-
-            carvePath(x1, y1, x2, y2) {
-                while (x1 !== x2 || y1 !== y2) {
-                    this.grid[y1][x1] = 0;
-                    if (x1 < x2) x1++;
-                    else if (x1 > x2) x1--;
-                    if (y1 < y2) y1++;
-                    else if (y1 > y2) y1--;
-                }
-                this.grid[y1][x1] = 0;
-            }
-
-            placeRooms() {
-                const roomCount = this.rng.intRange(5, 12);
-                for (let i = 0; i < roomCount; i++) {
-                    const w = this.rng.intRange(5, 15);
-                    const h = this.rng.intRange(5, 15);
-                    const x = this.rng.intRange(1, this.width - w - 1);
-                    const y = this.rng.intRange(1, this.height - h - 1);
-
-                    for (let ry = y; ry < y + h; ry++) {
-                        for (let rx = x; rx < x + w; rx++) {
-                            if (rx < this.width && ry < this.height) {
-                                this.grid[ry][rx] = 0;
-                            }
-                        }
-                    }
-                }
-            }
-
-            isWalkable(x, y) {
-                return x > 0 && x < this.width && y > 0 && y < this.height && this.grid[y][x] === 0;
-            }
-
-            getRandomFloor() {
-                let x, y;
-                do {
-                    x = this.rng.intRange(1, this.width - 1);
-                    y = this.rng.intRange(1, this.height - 1);
-                } while (!this.isWalkable(x, y));
-                return [x, y];
-            }
-        }
-
-        // ============================================
-        // 3D RAYCASTER ENGINE
-        // ============================================
-        class RaycasterEngine {
-            constructor(dungeon, width, height) {
-                this.dungeon = dungeon;
-                this.width = width;
-                this.height = height;
-                this.textureCache = {};
-            }
-
-            castRays(playerX, playerY, playerAngle, screenWidth, screenHeight) {
-                const fov = Math.PI / 3; // 60 degree FOV
-                const rays = screenWidth;
-                const output = Array(rays);
-
-                for (let i = 0; i < rays; i++) {
-                    const rayAngle = playerAngle + fov / 2 - (i / rays) * fov;
-                    const distance = this.castSingleRay(playerX, playerY, rayAngle);
-                    output[i] = distance;
-                }
-
-                return output;
-            }
-
-            castSingleRay(x, y, angle) {
-                const step = 0.05;
-                let maxDist = 0;
-
-                for (let dist = step; dist < 100; dist += step) {
-                    const checkX = x + Math.cos(angle) * dist;
-                    const checkY = y + Math.sin(angle) * dist;
-
-                    const gridX = Math.floor(checkX);
-                    const gridY = Math.floor(checkY);
-
-                    if (!this.dungeon.isWalkable(gridX, gridY)) {
-                        // Apply perspective correction
-                        return dist * Math.cos(angle - (player.angle || 0));
-                    }
-                }
-
-                return 100;
-            }
-
-            generateTexture(id) {
-                if (this.textureCache[id]) return this.textureCache[id];
-
-                const canvas = document.createElement('canvas');
-                canvas.width = 64;
-                canvas.height = 64;
-                const ctx = canvas.getContext('2d');
-
-                if (id === 'wall') {
-                    ctx.fillStyle = '#006666';
-                    ctx.fillRect(0, 0, 64, 64);
-                    ctx.strokeStyle = '#003333';
-                    for (let i = 0; i < 8; i++) {
-                        for (let j = 0; j < 8; j++) {
-                            if ((i + j) % 2 === 0) {
-                                ctx.strokeRect(i * 8, j * 8, 8, 8);
-                            }
-                        }
-                    }
-                } else if (id === 'floor') {
-                    ctx.fillStyle = '#001a1a';
-                    ctx.fillRect(0, 0, 64, 64);
-                    for (let i = 0; i < 64; i++) {
-                        ctx.fillStyle = `rgba(0, 255, 0, ${Math.random() * 0.1})`;
-                        ctx.fillRect(Math.random() * 64, Math.random() * 64, 1, 1);
-                    }
-                } else if (id === 'ceiling') {
-                    ctx.fillStyle = '#000;';
-                    ctx.fillRect(0, 0, 64, 64);
-                    ctx.fillStyle = 'rgba(0, 255, 0, 0.05)';
-                    for (let i = 0; i < 10; i++) {
-                        ctx.fillRect(Math.random() * 64, Math.random() * 64, 3, 3);
-                    }
-                }
-
-                this.textureCache[id] = canvas;
-                return canvas;
-            }
-        }
-
-        // ============================================
-        // ENEMY AI SYSTEM
-        // ============================================
-        class Enemy {
-            constructor(x, y, type, floor) {
+        class Creature {
+            constructor(x, y, genes = null) {
                 this.x = x;
                 this.y = y;
-                this.type = type; // 'drone', 'guardian', 'sentinel'
-                this.floor = floor;
-                this.health = type === 'drone' ? 20 : type === 'guardian' ? 50 : 80;
-                this.maxHealth = this.health;
-                this.speed = type === 'drone' ? 0.8 : type === 'guardian' ? 0.5 : 0.3;
-                this.damage = type === 'drone' ? 5 : type === 'guardian' ? 15 : 25;
-                this.vx = 0;
-                this.vy = 0;
-                this.attackCooldown = 0;
-                this.angle = 0;
-                this.patrolTimer = 0;
-                this.detectionRange = 20;
-            }
+                this.angle = Math.random() * Math.PI * 2;
 
-            update(playerX, playerY, dungeon) {
-                const dx = playerX - this.x;
-                const dy = playerY - this.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist < this.detectionRange) {
-                    // Chase player
-                    const targetAngle = Math.atan2(dy, dx);
-                    this.vx = Math.cos(targetAngle) * this.speed;
-                    this.vy = Math.sin(targetAngle) * this.speed;
-                    this.angle = targetAngle;
+                if (genes) {
+                    // Reproduce with mutation
+                    this.genes = {
+                        type: genes.type,
+                        speed: genes.speed + (Math.random() - 0.5) * 0.5,
+                        size: genes.size + (Math.random() - 0.5) * 1,
+                        visionRange: genes.visionRange + (Math.random() - 0.5) * 2,
+                        metabolism: genes.metabolism + (Math.random() - 0.5) * 0.02,
+                        reproductionThreshold: genes.reproductionThreshold + (Math.random() - 0.5) * 2
+                    };
                 } else {
-                    // Patrol
-                    this.patrolTimer--;
-                    if (this.patrolTimer < 0) {
-                        this.vx = Math.cos(Math.random() * Math.PI * 2) * this.speed * 0.5;
-                        this.vy = Math.sin(Math.random() * Math.PI * 2) * this.speed * 0.5;
-                        this.patrolTimer = 60;
-                    }
+                    // Random initialization
+                    const isHerbivore = Math.random() > 0.3;
+                    this.genes = {
+                        type: isHerbivore ? 'herbivore' : 'carnivore',
+                        speed: Math.random() * 3 + 1,
+                        size: Math.random() * 8 + 4,
+                        visionRange: Math.random() * 80 + 40,
+                        metabolism: isHerbivore ? Math.random() * 0.3 + 0.1 : Math.random() * 0.4 + 0.15,
+                        reproductionThreshold: isHerbivore ? Math.random() * 40 + 60 : Math.random() * 40 + 80
+                    };
                 }
 
-                // Movement with collision
-                const nextX = this.x + this.vx;
-                const nextY = this.y + this.vy;
+                // Clamp genes
+                this.genes.speed = Math.max(0.5, Math.min(5, this.genes.speed));
+                this.genes.size = Math.max(2, Math.min(15, this.genes.size));
+                this.genes.visionRange = Math.max(20, Math.min(150, this.genes.visionRange));
+                this.genes.metabolism = Math.max(0.05, Math.min(0.8, this.genes.metabolism));
 
-                if (dungeon.isWalkable(Math.floor(nextX), Math.floor(nextY))) {
-                    this.x = nextX;
-                    this.y = nextY;
-                }
-
-                // Decay cooldown
-                this.attackCooldown = Math.max(0, this.attackCooldown - 1);
+                this.energy = this.genes.reproductionThreshold;
+                this.age = 0;
+                this.target = null;
             }
 
-            takeDamage(amount) {
-                this.health -= amount;
-            }
-        }
+            update(creatures, food) {
+                // Age and metabolic cost
+                this.age++;
+                this.energy -= this.genes.metabolism;
 
-        // ============================================
-        // GAME STATE
-        // ============================================
-        const game = {
-            floor: 1,
-            score: 0,
-            kills: 0,
-            dungeonSeed: 42,
-            gameTime: 0,
-            state: 'playing' // playing, dead, won
-        };
-
-        const player = {
-            x: 0,
-            y: 0,
-            angle: 0,
-            health: 100,
-            maxHealth: 100,
-            ammo: 100,
-            maxAmmo: 100,
-            speed: 0.3,
-            shootCooldown: 0,
-            xp: 0,
-            xpToLevel: 100,
-            level: 1,
-            weaponPower: 1
-        };
-
-        let dungeon, raycaster, enemies = [];
-        let projectiles = [];
-
-        // ============================================
-        // LEVEL INITIALIZATION
-        // ============================================
-        function initializeLevel() {
-            game.dungeonSeed = game.floor * 12345 + 67890;
-            dungeon = new DungeonGenerator(100, 100, game.dungeonSeed);
-            raycaster = new RaycasterEngine(dungeon, canvas.width, canvas.height);
-
-            const [startX, startY] = dungeon.getRandomFloor();
-            player.x = startX + 0.5;
-            player.y = startY + 0.5;
-            player.angle = 0;
-
-            // Spawn enemies
-            enemies = [];
-            const enemyCount = 5 + game.floor * 3;
-            for (let i = 0; i < enemyCount; i++) {
-                const [ex, ey] = dungeon.getRandomFloor();
-                const distToPlayer = Math.sqrt((ex - player.x) ** 2 + (ey - player.y) ** 2);
-                if (distToPlayer > 10) {
-                    const typeRoll = Math.random();
-                    let type = 'drone';
-                    if (typeRoll > 0.7) type = 'guardian';
-                    if (typeRoll > 0.9) type = 'sentinel';
-                    enemies.push(new Enemy(ex + 0.5, ey + 0.5, type, game.floor));
-                }
-            }
-
-            projectiles = [];
-        }
-
-        // ============================================
-        // INPUT HANDLING
-        // ============================================
-        const keys = {};
-        let mouseX = canvas.width / 2;
-        let mouseY = canvas.height / 2;
-
-        window.addEventListener('keydown', (e) => {
-            keys[e.key.toLowerCase()] = true;
-        });
-
-        window.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
-
-        document.addEventListener('click', () => {
-            if (game.state === 'playing') {
-                shoot();
-            }
-        });
-
-        // ============================================
-        // GAME MECHANICS
-        // ============================================
-        function shoot() {
-            if (player.shootCooldown > 0 || player.ammo <= 0) return;
-
-            player.shootCooldown = 15;
-            player.ammo -= 1;
-
-            const damage = 10 + player.weaponPower * 5;
-            const spread = 0.1;
-
-            for (let i = -1; i <= 1; i++) {
-                const angle = player.angle + i * spread;
-                projectiles.push({
-                    x: player.x,
-                    y: player.y,
-                    vx: Math.cos(angle) * 1.5,
-                    vy: Math.sin(angle) * 1.5,
-                    life: 100,
-                    damage: damage
-                });
-            }
-
-            // Auto-refill ammo when empty
-            if (player.ammo <= 0) {
-                player.ammo = player.maxAmmo;
-            }
-        }
-
-        function update() {
-            game.gameTime++;
-
-            // Player movement
-            if (keys['w'] || keys['arrowup']) {
-                player.x += Math.cos(player.angle) * player.speed;
-                player.y += Math.sin(player.angle) * player.speed;
-            }
-            if (keys['s'] || keys['arrowdown']) {
-                player.x -= Math.cos(player.angle) * player.speed;
-                player.y -= Math.sin(player.angle) * player.speed;
-            }
-            if (keys['a'] || keys['arrowleft']) {
-                player.x += Math.cos(player.angle + Math.PI / 2) * player.speed;
-                player.y += Math.sin(player.angle + Math.PI / 2) * player.speed;
-            }
-            if (keys['d'] || keys['arrowright']) {
-                player.x += Math.cos(player.angle - Math.PI / 2) * player.speed;
-                player.y += Math.sin(player.angle - Math.PI / 2) * player.speed;
-            }
-
-            // Collision with walls
-            if (!dungeon.isWalkable(Math.floor(player.x), Math.floor(player.y))) {
-                player.x -= Math.cos(player.angle) * player.speed;
-                player.y -= Math.sin(player.angle) * player.speed;
-            }
-
-            // Mouse look
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const dx = mouseX - centerX;
-            player.angle += dx * 0.01;
-            if (mouseX !== centerX) {
-                // Reset mouse to center for continuous look
-            }
-
-            // Update cooldowns
-            player.shootCooldown = Math.max(0, player.shootCooldown - 1);
-
-            // Update enemies
-            enemies.forEach(enemy => {
-                enemy.update(player.x, player.y, dungeon);
-            });
-
-            // Update projectiles
-            projectiles = projectiles.filter(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
-
-                if (!dungeon.isWalkable(Math.floor(p.x), Math.floor(p.y))) {
+                // Die if no energy
+                if (this.energy <= 0 || this.age > 5000) {
                     return false;
                 }
 
-                // Check collision with enemies
-                for (let i = enemies.length - 1; i >= 0; i--) {
-                    const enemy = enemies[i];
-                    const dist = Math.sqrt((p.x - enemy.x) ** 2 + (p.y - enemy.y) ** 2);
-                    if (dist < 0.5) {
-                        enemy.takeDamage(p.damage);
-                        if (enemy.health <= 0) {
-                            game.kills++;
-                            game.score += (enemy.type === 'drone' ? 50 : enemy.type === 'guardian' ? 150 : 300) * game.floor;
-                            enemies.splice(i, 1);
-                            player.xp += 25;
+                // Find target
+                if (this.genes.type === 'herbivore') {
+                    this.findClosestFood(food);
+                } else {
+                    this.findClosestPrey(creatures);
+                }
+
+                // Move towards target
+                if (this.target) {
+                    const dx = this.target.x - this.x;
+                    const dy = this.target.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist > 0) {
+                        this.angle = Math.atan2(dy, dx);
+                        this.x += Math.cos(this.angle) * this.genes.speed;
+                        this.y += Math.sin(this.angle) * this.genes.speed;
+                    }
+
+                    // Check collision with target
+                    if (dist < this.genes.size) {
+                        if (this.genes.type === 'herbivore' && this.target instanceof Food) {
+                            this.energy += this.target.energy;
+                            return this.target.eaten = true;
+                        } else if (this.genes.type === 'carnivore' && this.target instanceof Creature) {
+                            this.energy += this.target.energy;
+                            return this.target.alive = false;
                         }
-                        return false;
                     }
                 }
 
-                return p.life > 0;
-            });
+                // Wrap around edges
+                if (this.x < 0) this.x = canvas.width;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.y < 0) this.y = canvas.height;
+                if (this.y > canvas.height) this.y = 0;
 
-            // Enemy collision with player
-            enemies.forEach(enemy => {
-                const dist = Math.sqrt((enemy.x - player.x) ** 2 + (enemy.y - player.y) ** 2);
-                if (dist < 0.8) {
-                    if (enemy.attackCooldown <= 0) {
-                        player.health -= enemy.damage * 0.1;
-                        enemy.attackCooldown = 30;
+                return true;
+            }
+
+            findClosestFood(food) {
+                let closest = null;
+                let closestDist = this.genes.visionRange;
+
+                food.forEach(f => {
+                    const dx = f.x - this.x;
+                    const dy = f.y - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closest = f;
                     }
+                });
+
+                this.target = closest;
+            }
+
+            findClosestPrey(creatures) {
+                let closest = null;
+                let closestDist = this.genes.visionRange;
+
+                creatures.forEach(c => {
+                    if (c !== this && c.genes.type === 'herbivore') {
+                        const dx = c.x - this.x;
+                        const dy = c.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < closestDist) {
+                            closestDist = dist;
+                            closest = c;
+                        }
+                    }
+                });
+
+                this.target = closest;
+            }
+
+            reproduce() {
+                if (this.energy > this.genes.reproductionThreshold) {
+                    this.energy *= 0.6;
+                    return new Creature(
+                        this.x + (Math.random() - 0.5) * 20,
+                        this.y + (Math.random() - 0.5) * 20,
+                        this.genes
+                    );
                 }
-            });
-
-            // Leveling system
-            if (player.xp >= player.xpToLevel) {
-                player.level++;
-                player.xp = 0;
-                player.xpToLevel = 100 + player.level * 50;
-                player.health = player.maxHealth;
-                player.maxHealth += 10;
-                player.weaponPower += 0.5;
+                return null;
             }
 
-            // Win condition
-            if (enemies.length === 0 && game.gameTime > 60) {
-                game.floor++;
-                initializeLevel();
-                addNotification(`Floor ${game.floor} unlocked!`);
-            }
+            draw() {
+                const color = this.genes.type === 'herbivore' ? '#00ff00' : '#ff3333';
+                const brightness = Math.min(1, this.energy / this.genes.reproductionThreshold);
 
-            // Lose condition
-            if (player.health <= 0) {
-                game.state = 'dead';
+                ctx.fillStyle = color;
+                ctx.globalAlpha = brightness * 0.8 + 0.2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.genes.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Direction indicator
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 0.6;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(
+                    this.x + Math.cos(this.angle) * this.genes.size * 1.5,
+                    this.y + Math.sin(this.angle) * this.genes.size * 1.5
+                );
+                ctx.stroke();
+
+                ctx.globalAlpha = 1;
             }
         }
 
         // ============================================
-        // RENDERING
+        // FOOD CLASS
         // ============================================
-        function render() {
-            // 3D Raycasting render
-            const rays = raycaster.castRays(player.x, player.y, player.angle, canvas.width, canvas.height);
+        class Food {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.energy = 15;
+                this.eaten = false;
+            }
 
-            // Clear and render
-            ctx.fillStyle = '#001a1a';
+            draw() {
+                ctx.fillStyle = '#ffff00';
+                ctx.globalAlpha = 0.8;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ============================================
+        // SIMULATION FUNCTIONS
+        // ============================================
+        function initializeSimulation() {
+            simulation.creatures = [];
+            simulation.food = [];
+            simulation.generation = 0;
+            simulation.history = {
+                herbCount: [],
+                carnCount: [],
+                herbSpeed: [],
+                carnSpeed: [],
+                herbSize: [],
+                carnSize: []
+            };
+
+            // Spawn initial population
+            for (let i = 0; i < 30; i++) {
+                simulation.creatures.push(new Creature(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height
+                ));
+            }
+
+            // Spawn initial food
+            for (let i = 0; i < 200; i++) {
+                simulation.food.push(new Food(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height
+                ));
+            }
+
+            addLog('Simulation initialized');
+        }
+
+        function updateSimulation() {
+            if (simulation.paused) return;
+
+            // Update creatures
+            simulation.creatures = simulation.creatures.filter(creature => {
+                return creature.update(simulation.creatures, simulation.food);
+            });
+
+            // Remove eaten food
+            simulation.food = simulation.food.filter(f => !f.eaten);
+
+            // Reproduction
+            const newborns = [];
+            simulation.creatures.forEach(creature => {
+                const child = creature.reproduce();
+                if (child) {
+                    newborns.push(child);
+                    addLog(`${creature.genes.type.toUpperCase()} reproduced`);
+                }
+            });
+            simulation.creatures.push(...newborns);
+
+            // Food regrowth (important for ecosystem balance)
+            if (simulation.food.length < 300) {
+                for (let i = 0; i < 5; i++) {
+                    simulation.food.push(new Food(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height
+                    ));
+                }
+            }
+
+            // Generation counter
+            simulation.generation++;
+
+            // Record statistics
+            if (simulation.generation % 10 === 0) {
+                recordStats();
+            }
+
+            // Extinction events
+            const herbivores = simulation.creatures.filter(c => c.genes.type === 'herbivore');
+            const carnivores = simulation.creatures.filter(c => c.genes.type === 'carnivore');
+
+            if (herbivores.length === 0 && carnivores.length > 0) {
+                addLog('EXTINCTION: All herbivores died. Carnivores starving...');
+                if (Math.random() > 0.7) {
+                    addLog('Herbivores respawned from distant lands');
+                    for (let i = 0; i < 10; i++) {
+                        simulation.creatures.push(new Creature(
+                            Math.random() * canvas.width,
+                            Math.random() * canvas.height
+                        ));
+                    }
+                }
+            }
+
+            if (herbivores.length > 500) {
+                addLog('OVERPOPULATION: Too many herbivores');
+                const toRemove = herbivores.length - 500;
+                for (let i = 0; i < toRemove; i++) {
+                    const idx = simulation.creatures.indexOf(herbivores[i]);
+                    if (idx > -1) simulation.creatures.splice(idx, 1);
+                }
+            }
+        }
+
+        function recordStats() {
+            const herbivores = simulation.creatures.filter(c => c.genes.type === 'herbivore');
+            const carnivores = simulation.creatures.filter(c => c.genes.type === 'carnivore');
+
+            const herbAvgSpeed = herbivores.length > 0
+                ? herbivores.reduce((sum, c) => sum + c.genes.speed, 0) / herbivores.length
+                : 0;
+
+            const carnAvgSpeed = carnivores.length > 0
+                ? carnivores.reduce((sum, c) => sum + c.genes.speed, 0) / carnivores.length
+                : 0;
+
+            const herbAvgSize = herbivores.length > 0
+                ? herbivores.reduce((sum, c) => sum + c.genes.size, 0) / herbivores.length
+                : 0;
+
+            const carnAvgSize = carnivores.length > 0
+                ? carnivores.reduce((sum, c) => sum + c.genes.size, 0) / carnivores.length
+                : 0;
+
+            simulation.history.herbCount.push(herbivores.length);
+            simulation.history.carnCount.push(carnivores.length);
+            simulation.history.herbSpeed.push(herbAvgSpeed);
+            simulation.history.carnSpeed.push(carnAvgSpeed);
+            simulation.history.herbSize.push(herbAvgSize);
+            simulation.history.carnSize.push(carnAvgSize);
+
+            // Keep only last 500 entries
+            Object.keys(simulation.history).forEach(key => {
+                if (simulation.history[key].length > 500) {
+                    simulation.history[key].shift();
+                }
+            });
+        }
+
+        function renderSimulation() {
+            // Clear canvas with fade
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Ceiling
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+            // Draw food
+            simulation.food.forEach(f => f.draw());
 
-            // Floor
-            ctx.fillStyle = '#001a1a';
-            ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+            // Draw creatures
+            simulation.creatures.forEach(c => c.draw());
 
-            // Render walls
-            const wallTexture = raycaster.generateTexture('wall');
-            const floorTexture = raycaster.generateTexture('floor');
-            const ceilingTexture = raycaster.generateTexture('ceiling');
-
-            for (let i = 0; i < canvas.width; i++) {
-                const distance = rays[i];
-                const wallHeight = Math.max(1, canvas.height / (distance * Math.cos(Math.PI / 6 * (i / canvas.width - 0.5))));
-
-                const shade = Math.max(0, 1 - distance / 50);
-                const y = (canvas.height - wallHeight) / 2;
-
-                // Draw wall
-                ctx.fillStyle = `rgba(0, 200, 200, ${shade})`;
-                ctx.fillRect(i, y, 1, wallHeight);
-
-                // Draw wall texture overlay
-                if (wallHeight > 10) {
-                    ctx.globalAlpha = shade * 0.3;
-                    ctx.drawImage(wallTexture, i, y, 1, wallHeight);
-                    ctx.globalAlpha = 1;
-                }
-
-                // Grid pattern
-                if (shade > 0.2) {
-                    ctx.strokeStyle = `rgba(0, 100, 100, ${shade * 0.3})`;
-                    ctx.lineWidth = 1;
-                    const gridSpacing = Math.max(2, wallHeight / 8);
-                    for (let gy = y; gy < y + wallHeight; gy += gridSpacing) {
-                        ctx.beginPath();
-                        ctx.moveTo(i, gy);
-                        ctx.lineTo(i + 1, gy);
-                        ctx.stroke();
-                    }
-                }
+            // Draw grid
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.05)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
             }
-
-            // Render enemies in 3D
-            enemies.forEach(enemy => {
-                const dx = enemy.x - player.x;
-                const dy = enemy.y - player.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx) - player.angle;
-
-                if (Math.abs(angle) < Math.PI / 3 && dist < 20) {
-                    const screenX = canvas.width / 2 + angle / (Math.PI / 3) * (canvas.width / 2);
-                    const screenY = canvas.height / 2;
-                    const size = Math.max(10, (10 / dist) * 50);
-
-                    // Enemy color based on type
-                    if (enemy.type === 'drone') ctx.fillStyle = '#ff3366';
-                    else if (enemy.type === 'guardian') ctx.fillStyle = '#ff9900';
-                    else ctx.fillStyle = '#ff00ff';
-
-                    ctx.globalAlpha = Math.max(0.3, 1 - dist / 20);
-                    ctx.fillRect(screenX - size / 2, screenY - size, size, size);
-
-                    // Health bar
-                    const healthPercent = enemy.health / enemy.maxHealth;
-                    ctx.fillStyle = healthPercent > 0.5 ? '#00ff00' : healthPercent > 0.25 ? '#ffff00' : '#ff0000';
-                    ctx.fillRect(screenX - size / 2, screenY - size - 5, size * healthPercent, 3);
-
-                    ctx.globalAlpha = 1;
-                }
-            });
-
-            // Mini-map
-            renderMiniMap();
-
-            // Update HUD
-            updateHUD();
-        }
-
-        function renderMiniMap() {
-            const mapScale = 5;
-            miniMapCtx.fillStyle = '#001a1a';
-            miniMapCtx.fillRect(0, 0, 150, 150);
-
-            // Draw walls
-            miniMapCtx.fillStyle = '#003333';
-            for (let y = 0; y < dungeon.height; y++) {
-                for (let x = 0; x < dungeon.width; x++) {
-                    if (dungeon.grid[y][x] === 1) {
-                        miniMapCtx.fillRect(x / mapScale, y / mapScale, 1, 1);
-                    }
-                }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
             }
-
-            // Draw player
-            miniMapCtx.fillStyle = '#00ff00';
-            miniMapCtx.fillRect(player.x / mapScale - 1, player.y / mapScale - 1, 2, 2);
-
-            // Draw enemies
-            miniMapCtx.fillStyle = '#ff3366';
-            enemies.forEach(enemy => {
-                miniMapCtx.fillRect(enemy.x / mapScale - 0.5, enemy.y / mapScale - 0.5, 1, 1);
-            });
         }
 
         function updateHUD() {
-            const stats = document.getElementById('stats');
-            const compass = document.getElementById('compass');
-            const objective = document.getElementById('objective');
-            const floorLabel = document.getElementById('floorLabel');
+            const herbivores = simulation.creatures.filter(c => c.genes.type === 'herbivore');
+            const carnivores = simulation.creatures.filter(c => c.genes.type === 'carnivore');
 
-            const direction = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(player.angle / (Math.PI / 4)) & 7];
+            const herbAvgSpeed = herbivores.length > 0
+                ? (herbivores.reduce((sum, c) => sum + c.genes.speed, 0) / herbivores.length).toFixed(2)
+                : 0;
 
-            stats.innerHTML = `
-                FLOOR: ${game.floor}<br>
-                HEALTH: ${Math.ceil(player.health)}/${player.maxHealth}<br>
-                AMMO: ${player.ammo}/${player.maxAmmo}<br>
-                LEVEL: ${player.level}<br>
-                XP: ${player.xp}/${player.xpToLevel}<br>
-                SCORE: ${game.score}<br>
-                ENEMIES: ${enemies.length}
-            `;
+            const carnAvgSpeed = carnivores.length > 0
+                ? (carnivores.reduce((sum, c) => sum + c.genes.speed, 0) / carnivores.length).toFixed(2)
+                : 0;
 
-            compass.innerHTML = `${direction} | TIME: ${Math.floor(game.gameTime / 60)}s`;
+            const herbAvgSize = herbivores.length > 0
+                ? (herbivores.reduce((sum, c) => sum + c.genes.size, 0) / herbivores.length).toFixed(2)
+                : 0;
 
-            objective.innerHTML = `
-                OBJECTIVE:<br>
-                ${enemies.length > 0 ? `Eliminate ${enemies.length} enemies` : 'PROCEED TO NEXT FLOOR'}<br><br>
-                WEAPON POWER: ${player.weaponPower.toFixed(1)}x
-            `;
+            const carnAvgSize = carnivores.length > 0
+                ? (carnivores.reduce((sum, c) => sum + c.genes.size, 0) / carnivores.length).toFixed(2)
+                : 0;
 
-            floorLabel.textContent = `FLOOR ${game.floor}`;
+            document.getElementById('generationCounter').textContent = `GENERATION ${simulation.generation}`;
+            document.getElementById('herbCount').textContent = herbivores.length;
+            document.getElementById('carnCount').textContent = carnivores.length;
+            document.getElementById('foodCount').textContent = simulation.food.length;
+            document.getElementById('herbSpeed').textContent = herbAvgSpeed;
+            document.getElementById('carnSpeed').textContent = carnAvgSpeed;
+            document.getElementById('herbSize').textContent = herbAvgSize;
+            document.getElementById('carnSize').textContent = carnAvgSize;
+
+            // Update speed indicator
+            document.getElementById('speedValue').textContent = simulation.speed;
+
+            // Draw population graph
+            drawPopulationGraph();
         }
 
-        function addNotification(text) {
-            const notif = document.getElementById('notification');
-            notif.innerHTML = text + '<br>' + notif.innerHTML;
-            if (notif.childNodes.length > 5) notif.removeChild(notif.lastChild);
+        function drawPopulationGraph() {
+            const svg = document.getElementById('populationGraph');
+            svg.innerHTML = '';
+
+            const width = svg.clientWidth;
+            const height = svg.clientHeight;
+            const data = simulation.history.herbCount;
+
+            if (data.length < 2) return;
+
+            const maxValue = Math.max(...simulation.history.herbCount, ...simulation.history.carnCount, 1);
+            const points = data.map((val, i) => {
+                const x = (i / (data.length - 1)) * width;
+                const y = height - (val / maxValue) * height;
+                return `${x},${y}`;
+            }).join(' ');
+
+            const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+            polyline.setAttribute('points', points);
+            polyline.setAttribute('fill', 'none');
+            polyline.setAttribute('stroke', '#00ff00');
+            polyline.setAttribute('stroke-width', '2');
+            svg.appendChild(polyline);
+
+            // Carnivore line
+            const carnPoints = simulation.history.carnCount.map((val, i) => {
+                const x = (i / (simulation.history.carnCount.length - 1)) * width;
+                const y = height - (val / maxValue) * height;
+                return `${x},${y}`;
+            }).join(' ');
+
+            if (carnPoints) {
+                const carnPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                carnPolyline.setAttribute('points', carnPoints);
+                carnPolyline.setAttribute('fill', 'none');
+                carnPolyline.setAttribute('stroke', '#ff3333');
+                carnPolyline.setAttribute('stroke-width', '2');
+                svg.appendChild(carnPolyline);
+            }
+        }
+
+        function addLog(message) {
+            const log = document.getElementById('eventLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${simulation.generation}] ${message}`;
+            log.insertBefore(entry, log.firstChild);
+
+            if (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
         }
 
         // ============================================
-        // LOADING SCREEN
+        // CONTROLS
         // ============================================
-        function hideLoadingScreen() {
-            document.getElementById('loadingScreen').classList.add('hidden');
-        }
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            simulation.paused = !simulation.paused;
+            document.getElementById('pauseBtn').textContent = simulation.paused ? 'RESUME' : 'PAUSE';
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            initializeSimulation();
+        });
+
+        document.getElementById('addFoodBtn').addEventListener('click', () => {
+            for (let i = 0; i < 50; i++) {
+                simulation.food.push(new Food(
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height
+                ));
+            }
+            addLog('Added 50 food items');
+        });
+
+        document.getElementById('speedSlider').addEventListener('change', (e) => {
+            simulation.speed = parseInt(e.target.value);
+        });
 
         // ============================================
         // MAIN LOOP
         // ============================================
-        let initialized = false;
-
         function gameLoop() {
-            if (!initialized) {
-                initializeLevel();
-                initialized = true;
-                hideLoadingScreen();
+            const stepsPerFrame = simulation.speed;
+            for (let i = 0; i < stepsPerFrame; i++) {
+                updateSimulation();
             }
 
-            update();
-            render();
+            renderSimulation();
+            updateHUD();
             requestAnimationFrame(gameLoop);
         }
 
         // Start
+        initializeSimulation();
         gameLoop();
     </script>
 </body>
