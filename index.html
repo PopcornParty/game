@@ -17,7 +17,7 @@
         background: black;
         border: 2px solid white;
     }
-    #menu {
+    #menu, #endScreen {
         margin-top: 100px;
     }
     button {
@@ -36,6 +36,11 @@
     <button onclick="startGame('multi')">Multiplayer</button>
 </div>
 
+<div id="endScreen" style="display:none;">
+    <h1 id="endText"></h1>
+    <button onclick="goToMenu()">Back to Menu</button>
+</div>
+
 <canvas id="gameCanvas" width="800" height="500"></canvas>
 
 <script>
@@ -43,37 +48,54 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 let gameMode = "solo";
+let running = false;
 
-// Paddle settings
+// Paddle
 const paddleWidth = 10;
 const paddleHeight = 100;
-
-// Left paddle (Player 1)
 let leftY = 200;
-
-// Right paddle (Player 2 / AI)
 let rightY = 200;
 
 // Ball
 let ballX = 400;
 let ballY = 250;
-let ballSpeedX = 10; // FAST
+let ballSpeedX = 10;
 let ballSpeedY = 6;
 
-// Controls
-let wPressed = false;
-let sPressed = false;
-let upPressed = false;
-let downPressed = false;
+// Scores
+let leftScore = 0;
+let rightScore = 0;
+const WIN_SCORE = 5;
 
+// Controls
+let wPressed = false, sPressed = false;
+let upPressed = false, downPressed = false;
+
+// Start
 function startGame(mode) {
     gameMode = mode;
     document.getElementById("menu").style.display = "none";
+    document.getElementById("endScreen").style.display = "none";
     canvas.style.display = "block";
+
+    leftScore = 0;
+    rightScore = 0;
+    leftY = rightY = 200;
+
     resetBall();
+    running = true;
     gameLoop();
 }
 
+// Menu
+function goToMenu() {
+    running = false;
+    canvas.style.display = "none";
+    document.getElementById("endScreen").style.display = "none";
+    document.getElementById("menu").style.display = "block";
+}
+
+// Reset ball
 function resetBall() {
     ballX = canvas.width / 2;
     ballY = canvas.height / 2;
@@ -87,6 +109,9 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "s") sPressed = true;
     if (e.key === "ArrowUp") upPressed = true;
     if (e.key === "ArrowDown") downPressed = true;
+
+    // ESC = menu
+    if (e.key === "Escape") goToMenu();
 });
 
 document.addEventListener("keyup", (e) => {
@@ -97,59 +122,80 @@ document.addEventListener("keyup", (e) => {
 });
 
 function update() {
-    // Player 1 movement
+    // Player 1
     if (wPressed) leftY -= 8;
     if (sPressed) leftY += 8;
-
-    // Clamp
     leftY = Math.max(0, Math.min(canvas.height - paddleHeight, leftY));
 
-    // Player 2 or AI
+    // Player 2 / AI
     if (gameMode === "multi") {
         if (upPressed) rightY -= 8;
         if (downPressed) rightY += 8;
     } else {
-        // PERFECT AI (never misses)
-        rightY = ballY - paddleHeight / 2;
+        rightY = ballY - paddleHeight / 2; // perfect AI
     }
-
     rightY = Math.max(0, Math.min(canvas.height - paddleHeight, rightY));
 
-    // Ball movement
+    // Ball
     ballX += ballSpeedX;
     ballY += ballSpeedY;
 
-    // Top & bottom bounce
-    if (ballY <= 0 || ballY >= canvas.height) {
-        ballSpeedY *= -1;
-    }
+    // Bounce
+    if (ballY <= 0 || ballY >= canvas.height) ballSpeedY *= -1;
 
-    // Left paddle collision
-    if (
-        ballX <= paddleWidth &&
+    // Paddle collisions
+    if (ballX <= paddleWidth &&
         ballY >= leftY &&
-        ballY <= leftY + paddleHeight
-    ) {
+        ballY <= leftY + paddleHeight) {
         ballSpeedX *= -1;
     }
 
-    // Right paddle collision
-    if (
-        ballX >= canvas.width - paddleWidth &&
+    if (ballX >= canvas.width - paddleWidth &&
         ballY >= rightY &&
-        ballY <= rightY + paddleHeight
-    ) {
+        ballY <= rightY + paddleHeight) {
         ballSpeedX *= -1;
     }
 
-    // Score reset
-    if (ballX < 0 || ballX > canvas.width) {
+    // Scoring
+    if (ballX < 0) {
+        rightScore++;
+
+        if (gameMode === "solo") {
+            endGame("You Lose 💀 Score: " + leftScore);
+            return;
+        }
+
+        checkWin();
+        resetBall();
+    }
+
+    if (ballX > canvas.width) {
+        leftScore++;
+        checkWin();
         resetBall();
     }
 }
 
+// Win check
+function checkWin() {
+    if (leftScore >= WIN_SCORE) {
+        endGame("Player 1 Wins 🏆");
+    }
+    if (rightScore >= WIN_SCORE) {
+        endGame("Player 2 Wins 🏆");
+    }
+}
+
+// End screen
+function endGame(text) {
+    running = false;
+    canvas.style.display = "none";
+    document.getElementById("endText").innerText = text;
+    document.getElementById("endScreen").style.display = "block";
+}
+
+// Draw
 function draw() {
-    // Clear
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -162,9 +208,20 @@ function draw() {
     ctx.beginPath();
     ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
     ctx.fill();
+
+    // Score
+    ctx.font = "40px Arial";
+    ctx.fillText(leftScore, canvas.width / 4, 50);
+    ctx.fillText(rightScore, canvas.width * 3 / 4, 50);
+
+    // Menu hint
+    ctx.font = "16px Arial";
+    ctx.fillText("Press ESC for Menu", 10, canvas.height - 10);
 }
 
+// Loop
 function gameLoop() {
+    if (!running) return;
     update();
     draw();
     requestAnimationFrame(gameLoop);
