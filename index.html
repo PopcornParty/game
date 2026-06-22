@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EVOLUTION - AI Ecosystem Simulator</title>
+    <title>VELOCITY - Advanced Racing Simulator</title>
     <style>
         * {
             margin: 0;
@@ -12,753 +12,1109 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Courier New', monospace;
             background: #0a0a0a;
             display: flex;
-            height: 100vh;
-            color: #00ff00;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
             overflow: hidden;
         }
 
-        #canvas {
-            flex: 1;
-            background: #000;
-            border-right: 2px solid #00ff00;
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
         }
 
-        .sidebar {
-            width: 300px;
-            background: #111;
-            border-left: 2px solid #00ff00;
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: none;
+        }
+
+        .hud {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .speedometer {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 200px;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #00ff00;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .speed-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00ff00;
+            text-align: center;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .speed-label {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .gear-display {
+            text-align: center;
+            font-size: 14px;
+            color: #ffff00;
+            margin-top: 8px;
+        }
+
+        .rpms {
+            width: 100%;
+            height: 6px;
+            background: #222;
+            border: 1px solid #00ff00;
+            margin-top: 8px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .rpm-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff6600);
+            width: 0%;
+            transition: width 0.05s;
+        }
+
+        .top-hud {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
             padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            text-align: center;
+            border-radius: 5px;
+            min-width: 400px;
         }
 
-        .panel {
+        .lap-time {
+            font-size: 24px;
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .lap-info {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 8px;
+        }
+
+        .mini-map {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+        }
+
+        .right-panel {
+            position: absolute;
+            right: 20px;
+            top: 240px;
+            background: rgba(0, 0, 0, 0.7);
             border: 2px solid #00ff00;
             padding: 15px;
-            background: rgba(0, 255, 0, 0.02);
+            font-size: 12px;
+            border-radius: 5px;
+            min-width: 200px;
         }
 
-        .panel-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px #00ff00;
-            font-size: 14px;
-        }
-
-        .stat {
+        .stat-row {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
             margin: 5px 0;
-            line-height: 1.4;
+            color: #00ff00;
         }
 
         .stat-label {
-            color: #00ff00;
+            color: #888;
+            min-width: 80px;
         }
 
         .stat-value {
-            color: #ff0;
+            color: #00ff00;
             font-weight: bold;
         }
 
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        button {
-            padding: 8px;
-            background: #001a00;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-            cursor: pointer;
-            font-family: monospace;
+        .message-log {
+            position: absolute;
+            bottom: 250px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+            padding: 15px;
             font-size: 11px;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: #00ff00;
-            color: #000;
-        }
-
-        .slider-container {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-        }
-
-        .log {
-            font-size: 10px;
+            border-radius: 5px;
+            max-width: 250px;
             max-height: 200px;
             overflow-y: auto;
-            border: 1px solid #00ff00;
-            padding: 8px;
-            background: rgba(0, 255, 0, 0.02);
-            line-height: 1.3;
         }
 
-        .log-entry {
-            margin: 3px 0;
+        .message {
             color: #00ff00;
+            margin: 3px 0;
+            text-shadow: 0 0 5px #00ff00;
+            line-height: 1.4;
         }
 
-        .speed-indicator {
-            display: flex;
-            gap: 4px;
-            margin-top: 10px;
+        .damage-indicator {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #ff3333;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 180px;
         }
 
-        .speed-bar {
-            flex: 1;
-            height: 6px;
-            background: #003300;
-            border: 1px solid #00ff00;
+        .damage-value {
+            font-size: 28px;
+            color: #ff3333;
+            font-weight: bold;
         }
 
-        .speed-fill {
+        .damage-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .damage-bar {
+            width: 100%;
+            height: 8px;
+            background: #222;
+            border: 1px solid #ff3333;
+            margin-top: 8px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .damage-fill {
             height: 100%;
-            background: #00ff00;
+            background: linear-gradient(90deg, #ff3333, #ff6666);
             width: 0%;
             transition: width 0.1s;
         }
 
-        .graph {
-            width: 100%;
-            height: 150px;
-            background: #003300;
-            border: 1px solid #00ff00;
-            position: relative;
-            margin-top: 10px;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .instructions {
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #666;
+            padding: 10px 20px;
             font-size: 11px;
-            line-height: 1.5;
-            color: #00ff00;
+            color: #888;
+            border-radius: 5px;
         }
 
-        .generation-counter {
-            font-size: 16px;
-            text-align: center;
-            padding: 10px;
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            color: #00ff00;
+            font-size: 20px;
+        }
+
+        .loading-screen.hidden {
+            display: none;
+        }
+
+        .loading-bar {
+            width: 400px;
+            height: 30px;
             border: 2px solid #00ff00;
-            background: rgba(0, 255, 0, 0.1);
+            margin: 30px 0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .loading-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .checkpoint-notif {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 255, 0, 0.2);
+            border: 3px solid #00ff00;
+            padding: 30px 50px;
+            font-size: 32px;
             font-weight: bold;
-            text-shadow: 0 0 10px #00ff00;
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00;
+            border-radius: 10px;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeInOut 2s ease-in-out;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes crash {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(-20deg) brightness(1.3); }
+        }
+
+        .crash-effect {
+            animation: crash 0.3s;
+        }
+
+        .leaderboard {
+            position: absolute;
+            top: 300px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffff00;
+            padding: 15px;
+            font-size: 11px;
+            border-radius: 5px;
+            min-width: 200px;
+        }
+
+        .leaderboard-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        .leaderboard-entry {
+            color: #aaa;
+            margin: 4px 0;
+        }
+
+        .leaderboard-entry.best {
+            color: #ffff00;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    <div class="sidebar">
-        <div class="generation-counter" id="generationCounter">GENERATION 0</div>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div class="hud">
+            <div class="loading-screen" id="loadingScreen">
+                <div>VELOCITY Racing Engine</div>
+                <div class="loading-bar">
+                    <div class="loading-bar-fill" id="loadingBar"></div>
+                </div>
+                <div id="loadingText">Initializing circuit...</div>
+            </div>
 
-        <div class="panel">
-            <div class="panel-title">POPULATION STATS</div>
-            <div class="stat">
-                <span class="stat-label">Herbivores:</span>
-                <span class="stat-value" id="herbCount">0</span>
+            <div class="top-hud">
+                <div class="lap-time" id="currentTime">00:00.00</div>
+                <div class="lap-info">
+                    <span id="lapNumber">LAP 1</span> | 
+                    <span id="position">POS: --/--</span>
+                </div>
             </div>
-            <div class="stat">
-                <span class="stat-label">Carnivores:</span>
-                <span class="stat-value" id="carnCount">0</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Food:</span>
-                <span class="stat-value" id="foodCount">0</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Avg Speed (H):</span>
-                <span class="stat-value" id="herbSpeed">0.0</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Avg Speed (C):</span>
-                <span class="stat-value" id="carnSpeed">0.0</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Avg Size (H):</span>
-                <span class="stat-value" id="herbSize">0.0</span>
-            </div>
-            <div class="stat">
-                <span class="stat-label">Avg Size (C):</span>
-                <span class="stat-value" id="carnSize">0.0</span>
-            </div>
-        </div>
 
-        <div class="panel">
-            <div class="panel-title">EVOLUTION GRAPH</div>
-            <div class="graph">
-                <svg id="populationGraph"></svg>
+            <canvas id="miniMapCanvas" class="mini-map"></canvas>
+
+            <div class="right-panel">
+                <div class="stat-row">
+                    <span class="stat-label">Speed:</span>
+                    <span class="stat-value" id="speedStat">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Throttle:</span>
+                    <span class="stat-value" id="throttleStat">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Grip:</span>
+                    <span class="stat-value" id="gripStat">100%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Best Lap:</span>
+                    <span class="stat-value" id="bestLap">--:--</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Distance:</span>
+                    <span class="stat-value" id="distance">0%</span>
+                </div>
             </div>
-        </div>
 
-        <div class="panel">
-            <div class="panel-title">SIMULATION SPEED</div>
-            <div class="slider-container">
-                <label>Game Speed: <span id="speedValue">1</span>x</label>
-                <input type="range" id="speedSlider" min="1" max="5" value="1">
+            <div class="leaderboard" id="leaderboard">
+                <div class="leaderboard-title">⚡ RIVALS</div>
             </div>
-        </div>
 
-        <div class="panel">
-            <div class="panel-title">CONTROLS</div>
-            <div class="controls">
-                <button id="pauseBtn">PAUSE</button>
-                <button id="resetBtn">RESET</button>
-                <button id="addFoodBtn">ADD FOOD</button>
+            <div class="speedometer">
+                <div class="speed-value" id="speedDisplay">0</div>
+                <div class="speed-label">KM/H</div>
+                <div class="gear-display" id="gearDisplay">N</div>
+                <div class="rpms">
+                    <div class="rpm-bar" id="rpmBar"></div>
+                </div>
             </div>
-        </div>
 
-        <div class="panel">
-            <div class="panel-title">EVENT LOG</div>
-            <div class="log" id="eventLog"></div>
-        </div>
+            <div class="damage-indicator">
+                <div class="damage-value" id="healthValue">100</div>
+                <div class="damage-label">CHASSIS INTEGRITY</div>
+                <div class="damage-bar">
+                    <div class="damage-fill" id="healthBar"></div>
+                </div>
+            </div>
 
-        <div class="panel">
-            <div class="panel-title">INFO</div>
-            <div class="instructions">
-                Watch as herbivores and carnivores evolve in real-time. Traits like speed and size naturally select based on survival. Pure genetic algorithm simulation.
+            <div class="message-log" id="messageLog"></div>
+
+            <div class="controls-info">
+                W/A/S/D - STEER | SPACE - HANDBRAKE | SHIFT - NITRO | R - RESTART | P - PAUSE
             </div>
         </div>
     </div>
 
     <script>
         // ============================================
-        // EVOLUTION SIMULATOR - AI GENETIC ALGORITHM
+        // VELOCITY - PROFESSIONAL RACING SIMULATOR
         // ============================================
 
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        const miniMapCanvas = document.getElementById('miniMapCanvas');
+        const miniMapCtx = miniMapCanvas.getContext('2d');
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth - 300;
+            canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            miniMapCanvas.width = 200;
+            miniMapCanvas.height = 200;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
         // ============================================
-        // SIMULATION STATE
+        // GAME STATE
         // ============================================
-        const simulation = {
-            generation: 0,
+        const gameState = {
             paused: false,
-            speed: 1,
-            creatures: [],
-            food: [],
-            history: {
-                herbCount: [],
-                carnCount: [],
-                herbSpeed: [],
-                carnSpeed: [],
-                herbSize: [],
-                carnSize: []
-            }
+            gameTime: 0,
+            currentLapTime: 0,
+            bestLapTime: Infinity,
+            currentLap: 1,
+            completedLaps: 0,
+            lapsToWin: 3,
+            showCheckpoint: false,
+            checkpointTimer: 0,
+            crashed: false,
+            crashTimer: 0
         };
 
         // ============================================
-        // CREATURE CLASS - GENETIC ALGORITHM
+        // TRACK GENERATION (Procedural with Bezier curves)
         // ============================================
-        class Creature {
-            constructor(x, y, genes = null) {
-                this.x = x;
-                this.y = y;
-                this.angle = Math.random() * Math.PI * 2;
-
-                if (genes) {
-                    // Reproduce with mutation
-                    this.genes = {
-                        type: genes.type,
-                        speed: genes.speed + (Math.random() - 0.5) * 0.5,
-                        size: genes.size + (Math.random() - 0.5) * 1,
-                        visionRange: genes.visionRange + (Math.random() - 0.5) * 2,
-                        metabolism: genes.metabolism + (Math.random() - 0.5) * 0.02,
-                        reproductionThreshold: genes.reproductionThreshold + (Math.random() - 0.5) * 2
-                    };
-                } else {
-                    // Random initialization
-                    const isHerbivore = Math.random() > 0.3;
-                    this.genes = {
-                        type: isHerbivore ? 'herbivore' : 'carnivore',
-                        speed: Math.random() * 3 + 1,
-                        size: Math.random() * 8 + 4,
-                        visionRange: Math.random() * 80 + 40,
-                        metabolism: isHerbivore ? Math.random() * 0.3 + 0.1 : Math.random() * 0.4 + 0.15,
-                        reproductionThreshold: isHerbivore ? Math.random() * 40 + 60 : Math.random() * 40 + 80
-                    };
-                }
-
-                // Clamp genes
-                this.genes.speed = Math.max(0.5, Math.min(5, this.genes.speed));
-                this.genes.size = Math.max(2, Math.min(15, this.genes.size));
-                this.genes.visionRange = Math.max(20, Math.min(150, this.genes.visionRange));
-                this.genes.metabolism = Math.max(0.05, Math.min(0.8, this.genes.metabolism));
-
-                this.energy = this.genes.reproductionThreshold;
-                this.age = 0;
-                this.target = null;
+        class TrackGenerator {
+            constructor(seed) {
+                this.seed = seed;
+                this.trackPoints = [];
+                this.trackWidth = 100;
+                this.generate();
             }
 
-            update(creatures, food) {
-                // Age and metabolic cost
-                this.age++;
-                this.energy -= this.genes.metabolism;
-
-                // Die if no energy
-                if (this.energy <= 0 || this.age > 5000) {
-                    return false;
-                }
-
-                // Find target
-                if (this.genes.type === 'herbivore') {
-                    this.findClosestFood(food);
-                } else {
-                    this.findClosestPrey(creatures);
-                }
-
-                // Move towards target
-                if (this.target) {
-                    const dx = this.target.x - this.x;
-                    const dy = this.target.y - this.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist > 0) {
-                        this.angle = Math.atan2(dy, dx);
-                        this.x += Math.cos(this.angle) * this.genes.speed;
-                        this.y += Math.sin(this.angle) * this.genes.speed;
-                    }
-
-                    // Check collision with target
-                    if (dist < this.genes.size) {
-                        if (this.genes.type === 'herbivore' && this.target instanceof Food) {
-                            this.energy += this.target.energy;
-                            return this.target.eaten = true;
-                        } else if (this.genes.type === 'carnivore' && this.target instanceof Creature) {
-                            this.energy += this.target.energy;
-                            return this.target.alive = false;
-                        }
-                    }
-                }
-
-                // Wrap around edges
-                if (this.x < 0) this.x = canvas.width;
-                if (this.x > canvas.width) this.x = 0;
-                if (this.y < 0) this.y = canvas.height;
-                if (this.y > canvas.height) this.y = 0;
-
-                return true;
+            seededRandom() {
+                this.seed = (this.seed * 9301 + 49297) % 233280;
+                return this.seed / 233280;
             }
 
-            findClosestFood(food) {
-                let closest = null;
-                let closestDist = this.genes.visionRange;
+            generate() {
+                const numCheckpoints = 8;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = Math.min(canvas.width, canvas.height) * 0.35;
 
-                food.forEach(f => {
-                    const dx = f.x - this.x;
-                    const dy = f.y - this.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        closest = f;
-                    }
-                });
-
-                this.target = closest;
-            }
-
-            findClosestPrey(creatures) {
-                let closest = null;
-                let closestDist = this.genes.visionRange;
-
-                creatures.forEach(c => {
-                    if (c !== this && c.genes.type === 'herbivore') {
-                        const dx = c.x - this.x;
-                        const dy = c.y - this.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < closestDist) {
-                            closestDist = dist;
-                            closest = c;
-                        }
-                    }
-                });
-
-                this.target = closest;
-            }
-
-            reproduce() {
-                if (this.energy > this.genes.reproductionThreshold) {
-                    this.energy *= 0.6;
-                    return new Creature(
-                        this.x + (Math.random() - 0.5) * 20,
-                        this.y + (Math.random() - 0.5) * 20,
-                        this.genes
-                    );
+                const points = [];
+                for (let i = 0; i < numCheckpoints; i++) {
+                    const angle = (i / numCheckpoints) * Math.PI * 2;
+                    const variance = this.seededRandom() * 60 - 30;
+                    const dist = radius + variance;
+                    points.push({
+                        x: centerX + Math.cos(angle) * dist,
+                        y: centerY + Math.sin(angle) * dist
+                    });
                 }
-                return null;
+
+                // Catmull-Rom spline interpolation for smooth track
+                this.trackPoints = [];
+                for (let i = 0; i < points.length; i++) {
+                    const p0 = points[(i - 1 + points.length) % points.length];
+                    const p1 = points[i];
+                    const p2 = points[(i + 1) % points.length];
+                    const p3 = points[(i + 2) % points.length];
+
+                    for (let t = 0; t < 1; t += 0.02) {
+                        const pos = this.catmullRom(p0, p1, p2, p3, t);
+                        this.trackPoints.push(pos);
+                    }
+                }
+            }
+
+            catmullRom(p0, p1, p2, p3, t) {
+                const t2 = t * t;
+                const t3 = t2 * t;
+
+                const v0 = (p2.x - p0.x) * 0.5;
+                const v1 = (p3.x - p1.x) * 0.5;
+                const x = p1.x + v0 * t + (3 * (p2.x - p1.x) - 2 * v0 - v1) * t2 + 
+                    (2 * (p1.x - p2.x) + v0 + v1) * t3;
+
+                const v0y = (p2.y - p0.y) * 0.5;
+                const v1y = (p3.y - p1.y) * 0.5;
+                const y = p1.y + v0y * t + (3 * (p2.y - p1.y) - 2 * v0y - v1y) * t2 + 
+                    (2 * (p1.y - p2.y) + v0y + v1y) * t3;
+
+                return { x, y };
+            }
+
+            getPointNormal(index) {
+                const current = this.trackPoints[index];
+                const next = this.trackPoints[(index + 1) % this.trackPoints.length];
+                const dx = next.x - current.x;
+                const dy = next.y - current.y;
+                const len = Math.sqrt(dx * dx + dy * dy);
+                return { x: -dy / len, y: dx / len };
+            }
+
+            isOnTrack(x, y) {
+                let closest = Infinity;
+                for (let i = 0; i < this.trackPoints.length; i++) {
+                    const p = this.trackPoints[i];
+                    const dist = Math.sqrt((p.x - x) ** 2 + (p.y - y) ** 2);
+                    if (dist < closest) closest = dist;
+                }
+                return closest < this.trackWidth / 2 + 20;
             }
 
             draw() {
-                const color = this.genes.type === 'herbivore' ? '#00ff00' : '#ff3333';
-                const brightness = Math.min(1, this.energy / this.genes.reproductionThreshold);
+                // Draw track
+                ctx.fillStyle = '#1a1a1a';
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = this.trackWidth;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
 
-                ctx.fillStyle = color;
-                ctx.globalAlpha = brightness * 0.8 + 0.2;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.genes.size, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Direction indicator
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 1;
-                ctx.globalAlpha = 0.6;
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y);
-                ctx.lineTo(
-                    this.x + Math.cos(this.angle) * this.genes.size * 1.5,
-                    this.y + Math.sin(this.angle) * this.genes.size * 1.5
-                );
+                ctx.moveTo(this.trackPoints[0].x, this.trackPoints[0].y);
+                for (let i = 1; i < this.trackPoints.length; i++) {
+                    ctx.lineTo(this.trackPoints[i].x, this.trackPoints[i].y);
+                }
+                ctx.closePath();
                 ctx.stroke();
 
-                ctx.globalAlpha = 1;
+                // Draw center line
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 10]);
+                ctx.beginPath();
+                ctx.moveTo(this.trackPoints[0].x, this.trackPoints[0].y);
+                for (let i = 1; i < this.trackPoints.length; i++) {
+                    ctx.lineTo(this.trackPoints[i].x, this.trackPoints[i].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Draw checkpoints
+                for (let i = 0; i < this.trackPoints.length; i += Math.floor(this.trackPoints.length / 8)) {
+                    const p = this.trackPoints[i];
+                    ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+                    ctx.fillRect(p.x - this.trackWidth / 2, p.y - 10, this.trackWidth, 20);
+                }
+
+                // Draw grass
+                ctx.fillStyle = '#0a3a0a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Redraw background
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradient.addColorStop(0, '#0f3a1f');
+                gradient.addColorStop(1, '#1a2f2f');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
         }
 
         // ============================================
-        // FOOD CLASS
+        // PLAYER CAR PHYSICS ENGINE
         // ============================================
-        class Food {
+        class Car {
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.energy = 15;
-                this.eaten = false;
+                this.vx = 0;
+                this.vy = 0;
+                this.angle = 0;
+                this.angularVelocity = 0;
+
+                // Vehicle specs
+                this.mass = 1300;
+                this.maxSpeed = 280;
+                this.acceleration = 0.35;
+                this.friction = 0.08;
+                this.brakePower = 0.15;
+                this.handbrakeGrip = 0.5;
+                this.turnSpeed = 0.08;
+                this.length = 30;
+                this.width = 16;
+
+                // Engine
+                this.throttle = 0;
+                this.isBraking = false;
+                this.isHandbraking = false;
+                this.gear = 0; // -1=reverse, 0=neutral, 1-6=forward
+                this.rpm = 0;
+                this.maxRPM = 8000;
+
+                // Suspension & damage
+                this.health = 100;
+                this.maxHealth = 100;
+                this.suspensionCompression = 0;
+                this.wheelSlip = 0;
+                this.driftAngle = 0;
+
+                // Nitro
+                this.nitroFuel = 100;
+                this.maxNitro = 100;
+                this.isNitroActive = false;
+
+                // Lap tracking
+                this.lastCheckpoint = 0;
+                this.checkpointsPassed = 0;
+                this.lapStartTime = 0;
+                this.crossedStartLine = false;
+
+                // Advanced physics
+                this.tireTemperature = 80;
+                this.aerodynamicDrag = 0.0001;
+                this.rollingResistance = 0.003;
+            }
+
+            update(input, track) {
+                // Input handling
+                this.throttle = input.throttle;
+                this.isBraking = input.braking;
+                this.isHandbraking = input.handbraking;
+
+                // Engine simulation
+                this.gear = input.gear;
+                if (this.gear !== 0) {
+                    const gearRatios = [-3.5, 3.5, 2.8, 2.2, 1.8, 1.5, 1.2];
+                    const gearRatio = gearRatios[this.gear + 1];
+                    const wheelspin = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    this.rpm = (wheelspin / this.maxSpeed) * this.maxRPM * gearRatio;
+                    this.rpm = Math.min(this.maxRPM, Math.max(0, this.rpm));
+                }
+
+                // Acceleration and braking
+                let speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+
+                let forceAmount = 0;
+                if (this.gear > 0) {
+                    forceAmount = this.throttle * this.acceleration;
+                    if (this.isNitroActive && this.nitroFuel > 0) {
+                        forceAmount *= 1.5;
+                        this.nitroFuel -= 1;
+                    } else {
+                        this.isNitroActive = false;
+                    }
+                } else if (this.gear < 0) {
+                    forceAmount = this.throttle * this.acceleration * 0.6;
+                }
+
+                if (this.isBraking && speed > 0) {
+                    forceAmount = -this.brakePower;
+                }
+
+                // Apply drag and resistance
+                const dragForce = speed * speed * this.aerodynamicDrag;
+                const resistanceForce = speed * this.rollingResistance;
+                const totalResistance = dragForce + resistanceForce;
+
+                // Grip calculation based on tire temperature and steering
+                let grip = 1.0;
+                if (this.isHandbraking) {
+                    grip = this.handbrakeGrip;
+                    this.tireTemperature = Math.min(150, this.tireTemperature + 2);
+                } else {
+                    this.tireTemperature = Math.max(80, this.tireTemperature - 0.5);
+                }
+
+                // Steering
+                this.angle += input.steering * this.turnSpeed * (speed / this.maxSpeed) * grip;
+
+                // Drift physics
+                if (this.isHandbraking && speed > 20) {
+                    this.driftAngle = this.angle + input.steering * 0.3;
+                } else {
+                    this.driftAngle += (this.angle - this.driftAngle) * 0.05;
+                }
+
+                // Calculate new velocity
+                const accelerationVector = forceAmount / this.mass;
+                this.vx += Math.cos(this.angle) * accelerationVector - Math.cos(this.angle) * totalResistance;
+                this.vy += Math.sin(this.angle) * accelerationVector - Math.sin(this.angle) * totalResistance;
+
+                // Speed limiter
+                speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > this.maxSpeed) {
+                    const scale = this.maxSpeed / speed;
+                    this.vx *= scale;
+                    this.vy *= scale;
+                }
+
+                // Collision with track boundaries
+                if (!track.isOnTrack(this.x, this.y)) {
+                    this.health -= 0.5;
+                    this.vx *= 0.7;
+                    this.vy *= 0.7;
+                }
+
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wheel slip for visual effect
+                this.wheelSlip = Math.abs(Math.sin(this.driftAngle - this.angle)) * speed;
+
+                // Suspension compression (visual only)
+                this.suspensionCompression = Math.abs(forceAmount) * 0.1;
+            }
+
+            checkpointLogic(track, checkpointIndex) {
+                if (checkpointIndex !== this.lastCheckpoint) {
+                    this.lastCheckpoint = checkpointIndex;
+                    this.checkpointsPassed++;
+
+                    const totalCheckpoints = Math.floor(track.trackPoints.length / 8);
+                    if (checkpointIndex === 0 && this.checkpointsPassed > 1) {
+                        // Crossed start line = completed lap
+                        const lapTime = gameState.gameTime - this.lapStartTime;
+                        gameState.currentLapTime = lapTime;
+
+                        if (lapTime < gameState.bestLapTime) {
+                            gameState.bestLapTime = lapTime;
+                            addMessage('🏁 NEW BEST LAP!');
+                        }
+
+                        gameState.completedLaps++;
+                        gameState.currentLap++;
+                        this.lapStartTime = gameState.gameTime;
+
+                        gameState.showCheckpoint = true;
+                        gameState.checkpointTimer = 120;
+
+                        return true; // Lap completed
+                    }
+                }
+                return false;
             }
 
             draw() {
-                ctx.fillStyle = '#ffff00';
-                ctx.globalAlpha = 0.8;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.driftAngle);
+
+                // Car body
+                ctx.fillStyle = '#ff3333';
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, this.length, this.width, 0, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.globalAlpha = 1;
+
+                // Car outline
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Windshield
+                ctx.fillStyle = 'rgba(100, 150, 255, 0.5)';
+                ctx.fillRect(-this.length / 2, -this.width / 3, this.length / 2, this.width / 3);
+
+                // Wheel slip effect (drift smoke)
+                if (this.wheelSlip > 10) {
+                    ctx.fillStyle = `rgba(200, 200, 200, ${Math.min(0.4, this.wheelSlip / 50)})`;
+                    ctx.beginPath();
+                    ctx.arc(-this.length / 3, -this.width / 2, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(-this.length / 3, this.width / 2, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Direction indicator
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(this.length, 0);
+                ctx.stroke();
+
+                ctx.restore();
+
+                // Health indicator
+                ctx.fillStyle = this.health > 50 ? '#00ff00' : this.health > 25 ? '#ffff00' : '#ff3333';
+                ctx.fillRect(this.x - 15, this.y - 25, 30 * (this.health / 100), 4);
+            }
+
+            getNitroPercentage() {
+                return (this.nitroFuel / this.maxNitro) * 100;
+            }
+
+            getGripPercentage() {
+                return (1 - this.wheelSlip / 100) * 100;
             }
         }
 
         // ============================================
-        // SIMULATION FUNCTIONS
+        // AI OPPONENTS (Racing Logic)
         // ============================================
-        function initializeSimulation() {
-            simulation.creatures = [];
-            simulation.food = [];
-            simulation.generation = 0;
-            simulation.history = {
-                herbCount: [],
-                carnCount: [],
-                herbSpeed: [],
-                carnSpeed: [],
-                herbSize: [],
-                carnSize: []
-            };
-
-            // Spawn initial population
-            for (let i = 0; i < 30; i++) {
-                simulation.creatures.push(new Creature(
-                    Math.random() * canvas.width,
-                    Math.random() * canvas.height
-                ));
+        class AIOpponent extends Car {
+            constructor(x, y, name, difficulty) {
+                super(x, y);
+                this.name = name;
+                this.difficulty = difficulty; // 1-3
+                this.maxSpeed = 250 + difficulty * 10;
+                this.lapTimes = [];
+                this.targetCheckpoint = 0;
+                this.skillVariation = Math.random() * 0.3 + 0.7;
             }
 
-            // Spawn initial food
-            for (let i = 0; i < 200; i++) {
-                simulation.food.push(new Food(
-                    Math.random() * canvas.width,
-                    Math.random() * canvas.height
-                ));
+            update(track, playerCar) {
+                const currentCheckpoint = Math.floor((this.checkpointsPassed % Math.floor(track.trackPoints.length / 8)));
+                const targetPoint = track.trackPoints[currentCheckpoint * Math.floor(track.trackPoints.length / 8)];
+
+                const dx = targetPoint.x - this.x;
+                const dy = targetPoint.y - this.y;
+                const targetAngle = Math.atan2(dy, dx);
+                let angleDiff = targetAngle - this.angle;
+
+                // Normalize angle difference
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                const input = {
+                    throttle: 1,
+                    braking: false,
+                    steering: Math.min(1, Math.max(-1, angleDiff * 3)) * this.skillVariation,
+                    gear: 1,
+                    handbraking: Math.abs(angleDiff) > 0.5 ? 1 : 0
+                };
+
+                super.update(input, track);
+                this.checkpointLogic(track, currentCheckpoint);
             }
 
-            addLog('Simulation initialized');
-        }
-
-        function updateSimulation() {
-            if (simulation.paused) return;
-
-            // Update creatures
-            simulation.creatures = simulation.creatures.filter(creature => {
-                return creature.update(simulation.creatures, simulation.food);
-            });
-
-            // Remove eaten food
-            simulation.food = simulation.food.filter(f => !f.eaten);
-
-            // Reproduction
-            const newborns = [];
-            simulation.creatures.forEach(creature => {
-                const child = creature.reproduce();
-                if (child) {
-                    newborns.push(child);
-                    addLog(`${creature.genes.type.toUpperCase()} reproduced`);
-                }
-            });
-            simulation.creatures.push(...newborns);
-
-            // Food regrowth (important for ecosystem balance)
-            if (simulation.food.length < 300) {
-                for (let i = 0; i < 5; i++) {
-                    simulation.food.push(new Food(
-                        Math.random() * canvas.width,
-                        Math.random() * canvas.height
-                    ));
-                }
-            }
-
-            // Generation counter
-            simulation.generation++;
-
-            // Record statistics
-            if (simulation.generation % 10 === 0) {
-                recordStats();
-            }
-
-            // Extinction events
-            const herbivores = simulation.creatures.filter(c => c.genes.type === 'herbivore');
-            const carnivores = simulation.creatures.filter(c => c.genes.type === 'carnivore');
-
-            if (herbivores.length === 0 && carnivores.length > 0) {
-                addLog('EXTINCTION: All herbivores died. Carnivores starving...');
-                if (Math.random() > 0.7) {
-                    addLog('Herbivores respawned from distant lands');
-                    for (let i = 0; i < 10; i++) {
-                        simulation.creatures.push(new Creature(
-                            Math.random() * canvas.width,
-                            Math.random() * canvas.height
-                        ));
-                    }
-                }
-            }
-
-            if (herbivores.length > 500) {
-                addLog('OVERPOPULATION: Too many herbivores');
-                const toRemove = herbivores.length - 500;
-                for (let i = 0; i < toRemove; i++) {
-                    const idx = simulation.creatures.indexOf(herbivores[i]);
-                    if (idx > -1) simulation.creatures.splice(idx, 1);
-                }
+            getLastLapTime() {
+                return this.lapTimes.length > 0 ? this.lapTimes[this.lapTimes.length - 1] : Infinity;
             }
         }
 
-        function recordStats() {
-            const herbivores = simulation.creatures.filter(c => c.genes.type === 'herbivore');
-            const carnivores = simulation.creatures.filter(c => c.genes.type === 'carnivore');
+        // ============================================
+        // INPUT HANDLING
+        // ============================================
+        const input = {
+            throttle: 0,
+            braking: false,
+            steering: 0,
+            gear: 0,
+            handbraking: false,
+            nitroActive: false
+        };
 
-            const herbAvgSpeed = herbivores.length > 0
-                ? herbivores.reduce((sum, c) => sum + c.genes.speed, 0) / herbivores.length
-                : 0;
+        const keys = {};
 
-            const carnAvgSpeed = carnivores.length > 0
-                ? carnivores.reduce((sum, c) => sum + c.genes.speed, 0) / carnivores.length
-                : 0;
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            keys[key] = true;
 
-            const herbAvgSize = herbivores.length > 0
-                ? herbivores.reduce((sum, c) => sum + c.genes.size, 0) / herbivores.length
-                : 0;
+            if (key === 'r') {
+                location.reload();
+            }
 
-            const carnAvgSize = carnivores.length > 0
-                ? carnivores.reduce((sum, c) => sum + c.genes.size, 0) / carnivores.length
-                : 0;
+            if (key === 'p') {
+                gameState.paused = !gameState.paused;
+            }
+        });
 
-            simulation.history.herbCount.push(herbivores.length);
-            simulation.history.carnCount.push(carnivores.length);
-            simulation.history.herbSpeed.push(herbAvgSpeed);
-            simulation.history.carnSpeed.push(carnAvgSpeed);
-            simulation.history.herbSize.push(herbAvgSize);
-            simulation.history.carnSize.push(carnAvgSize);
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            keys[key] = false;
+        });
 
-            // Keep only last 500 entries
-            Object.keys(simulation.history).forEach(key => {
-                if (simulation.history[key].length > 500) {
-                    simulation.history[key].shift();
-                }
-            });
+        // ============================================
+        // GAME INITIALIZATION
+        // ============================================
+        const track = new TrackGenerator(42);
+        const playerCar = new Car(track.trackPoints[0].x, track.trackPoints[0].y);
+        const opponents = [
+            new AIOpponent(track.trackPoints[10].x, track.trackPoints[10].y, 'VIPER', 2),
+            new AIOpponent(track.trackPoints[20].x, track.trackPoints[20].y, 'PHOENIX', 3),
+            new AIOpponent(track.trackPoints[30].x, track.trackPoints[30].y, 'FALCON', 1)
+        ];
+
+        let messages = [];
+
+        function addMessage(text) {
+            messages.unshift({ text, timer: 180 });
+            if (messages.length > 10) messages.pop();
         }
 
-        function renderSimulation() {
-            // Clear canvas with fade
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        // ============================================
+        // GAME LOOP UPDATE
+        // ============================================
+        function update() {
+            if (gameState.paused) return;
+
+            gameState.gameTime++;
+
+            // Process input
+            input.throttle = (keys['w'] || keys['arrowup']) ? 1 : 0;
+            input.braking = keys['s'] || keys['arrowdown'];
+            input.steering = 0;
+            if (keys['a'] || keys['arrowleft']) input.steering = -1;
+            if (keys['d'] || keys['arrowright']) input.steering = 1;
+            input.gear = keys['shift'] ? -1 : 1;
+            input.handbraking = keys[' '];
+            input.nitroActive = keys['n'];
+
+            if (input.nitroActive && playerCar.nitroFuel > 0) {
+                playerCar.isNitroActive = true;
+            }
+
+            // Update player
+            playerCar.update(input, track);
+
+            // Check lap progress
+            const checkpointIndex = Math.floor((playerCar.checkpointsPassed % Math.floor(track.trackPoints.length / 8)));
+            playerCar.checkpointLogic(track, checkpointIndex);
+
+            // Update AI
+            opponents.forEach(opponent => {
+                opponent.update(track, playerCar);
+                const oppCheckpointIndex = Math.floor((opponent.checkpointsPassed % Math.floor(track.trackPoints.length / 8)));
+                opponent.checkpointLogic(track, oppCheckpointIndex);
+            });
+
+            // Update messages
+            messages = messages.filter(m => {
+                m.timer--;
+                return m.timer > 0;
+            });
+
+            // Checkpoint notification
+            if (gameState.showCheckpoint) {
+                gameState.checkpointTimer--;
+                if (gameState.checkpointTimer <= 0) {
+                    gameState.showCheckpoint = false;
+                }
+            }
+
+            // Win condition
+            if (playerCar.checkpointsPassed > 0 && Math.floor(playerCar.checkpointsPassed / Math.floor(track.trackPoints.length / 8)) >= gameState.lapsToWin) {
+                addMessage('🏆 RACE COMPLETE! YOU WIN!');
+            }
+        }
+
+        // ============================================
+        // RENDERING
+        // ============================================
+        function render() {
+            // Clear and draw background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#0f3a1f');
+            gradient.addColorStop(1, '#1a2f2f');
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw food
-            simulation.food.forEach(f => f.draw());
+            // Draw track
+            track.draw();
 
-            // Draw creatures
-            simulation.creatures.forEach(c => c.draw());
+            // Draw AI cars
+            opponents.forEach(opponent => {
+                opponent.draw();
+            });
 
-            // Draw grid
-            ctx.strokeStyle = 'rgba(0, 255, 0, 0.05)';
-            ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += 50) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
+            // Draw player car
+            playerCar.draw();
+
+            // Draw messages
+            ctx.fillStyle = '#ffff00';
+            ctx.font = '20px Arial';
+            messages.forEach((msg, i) => {
+                const alpha = Math.min(1, msg.timer / 30);
+                ctx.globalAlpha = alpha;
+                ctx.fillText(msg.text, 20, 100 + i * 30);
+            });
+            ctx.globalAlpha = 1;
+
+            // Draw checkpoint notification
+            if (gameState.showCheckpoint) {
+                const alpha = Math.min(1, gameState.checkpointTimer / 30);
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
+                ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 40, 300, 80);
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(canvas.width / 2 - 150, canvas.height / 2 - 40, 300, 80);
+                ctx.fillStyle = '#00ff00';
+                ctx.font = 'bold 32px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`LAP ${gameState.currentLap - 1} COMPLETE`, canvas.width / 2, canvas.height / 2 + 10);
+                ctx.textAlign = 'left';
+                ctx.globalAlpha = 1;
             }
-            for (let y = 0; y < canvas.height; y += 50) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
+
+            // Render mini-map
+            renderMiniMap();
+
+            // Update HUD
+            updateHUD();
+        }
+
+        function renderMiniMap() {
+            miniMapCtx.fillStyle = '#001a00';
+            miniMapCtx.fillRect(0, 0, 200, 200);
+
+            const scale = 200 / Math.max(canvas.width, canvas.height) * 0.5;
+
+            // Draw track on mini-map
+            miniMapCtx.strokeStyle = '#00ff00';
+            miniMapCtx.lineWidth = 2;
+            miniMapCtx.beginPath();
+            miniMapCtx.moveTo((track.trackPoints[0].x - canvas.width / 2) * scale + 100, (track.trackPoints[0].y - canvas.height / 2) * scale + 100);
+            for (let i = 1; i < track.trackPoints.length; i++) {
+                miniMapCtx.lineTo((track.trackPoints[i].x - canvas.width / 2) * scale + 100, (track.trackPoints[i].y - canvas.height / 2) * scale + 100);
             }
+            miniMapCtx.closePath();
+            miniMapCtx.stroke();
+
+            // Draw player
+            miniMapCtx.fillStyle = '#ff3333';
+            miniMapCtx.beginPath();
+            miniMapCtx.arc((playerCar.x - canvas.width / 2) * scale + 100, (playerCar.y - canvas.height / 2) * scale + 100, 4, 0, Math.PI * 2);
+            miniMapCtx.fill();
+
+            // Draw opponents
+            miniMapCtx.fillStyle = '#ffff00';
+            opponents.forEach(opponent => {
+                miniMapCtx.beginPath();
+                miniMapCtx.arc((opponent.x - canvas.width / 2) * scale + 100, (opponent.y - canvas.height / 2) * scale + 100, 3, 0, Math.PI * 2);
+                miniMapCtx.fill();
+            });
+        }
+
+        function formatTime(frames) {
+            const minutes = Math.floor(frames / 3600);
+            const seconds = Math.floor((frames % 3600) / 60);
+            const milliseconds = Math.floor((frames % 60) * 16.67);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}.${Math.floor(milliseconds / 10).toString().padStart(2, '0')}`;
         }
 
         function updateHUD() {
-            const herbivores = simulation.creatures.filter(c => c.genes.type === 'herbivore');
-            const carnivores = simulation.creatures.filter(c => c.genes.type === 'carnivore');
+            // Time display
+            document.getElementById('currentTime').textContent = formatTime(gameState.currentLapTime);
 
-            const herbAvgSpeed = herbivores.length > 0
-                ? (herbivores.reduce((sum, c) => sum + c.genes.speed, 0) / herbivores.length).toFixed(2)
-                : 0;
+            // Position
+            const allCars = [playerCar, ...opponents];
+            allCars.sort((a, b) => b.checkpointsPassed - a.checkpointsPassed);
+            const playerPosition = allCars.findIndex(car => car === playerCar) + 1;
+            document.getElementById('position').textContent = `POS: ${playerPosition}/${allCars.length}`;
 
-            const carnAvgSpeed = carnivores.length > 0
-                ? (carnivores.reduce((sum, c) => sum + c.genes.speed, 0) / carnivores.length).toFixed(2)
-                : 0;
+            // Lap info
+            document.getElementById('lapNumber').textContent = `LAP ${gameState.currentLap}/${gameState.lapsToWin}`;
 
-            const herbAvgSize = herbivores.length > 0
-                ? (herbivores.reduce((sum, c) => sum + c.genes.size, 0) / herbivores.length).toFixed(2)
-                : 0;
+            // Stats
+            const speed = Math.sqrt(playerCar.vx ** 2 + playerCar.vy ** 2);
+            document.getElementById('speedStat').textContent = Math.floor(speed);
+            document.getElementById('speedDisplay').textContent = Math.floor(speed);
+            document.getElementById('throttleStat').textContent = Math.floor(input.throttle * 100) + '%';
+            document.getElementById('gripStat').textContent = Math.floor(playerCar.getGripPercentage()) + '%';
+            document.getElementById('distance').textContent = Math.floor((playerCar.checkpointsPassed / Math.floor(track.trackPoints.length / 8)) * 100) + '%';
 
-            const carnAvgSize = carnivores.length > 0
-                ? (carnivores.reduce((sum, c) => sum + c.genes.size, 0) / carnivores.length).toFixed(2)
-                : 0;
-
-            document.getElementById('generationCounter').textContent = `GENERATION ${simulation.generation}`;
-            document.getElementById('herbCount').textContent = herbivores.length;
-            document.getElementById('carnCount').textContent = carnivores.length;
-            document.getElementById('foodCount').textContent = simulation.food.length;
-            document.getElementById('herbSpeed').textContent = herbAvgSpeed;
-            document.getElementById('carnSpeed').textContent = carnAvgSpeed;
-            document.getElementById('herbSize').textContent = herbAvgSize;
-            document.getElementById('carnSize').textContent = carnAvgSize;
-
-            // Update speed indicator
-            document.getElementById('speedValue').textContent = simulation.speed;
-
-            // Draw population graph
-            drawPopulationGraph();
-        }
-
-        function drawPopulationGraph() {
-            const svg = document.getElementById('populationGraph');
-            svg.innerHTML = '';
-
-            const width = svg.clientWidth;
-            const height = svg.clientHeight;
-            const data = simulation.history.herbCount;
-
-            if (data.length < 2) return;
-
-            const maxValue = Math.max(...simulation.history.herbCount, ...simulation.history.carnCount, 1);
-            const points = data.map((val, i) => {
-                const x = (i / (data.length - 1)) * width;
-                const y = height - (val / maxValue) * height;
-                return `${x},${y}`;
-            }).join(' ');
-
-            const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-            polyline.setAttribute('points', points);
-            polyline.setAttribute('fill', 'none');
-            polyline.setAttribute('stroke', '#00ff00');
-            polyline.setAttribute('stroke-width', '2');
-            svg.appendChild(polyline);
-
-            // Carnivore line
-            const carnPoints = simulation.history.carnCount.map((val, i) => {
-                const x = (i / (simulation.history.carnCount.length - 1)) * width;
-                const y = height - (val / maxValue) * height;
-                return `${x},${y}`;
-            }).join(' ');
-
-            if (carnPoints) {
-                const carnPolyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                carnPolyline.setAttribute('points', carnPoints);
-                carnPolyline.setAttribute('fill', 'none');
-                carnPolyline.setAttribute('stroke', '#ff3333');
-                carnPolyline.setAttribute('stroke-width', '2');
-                svg.appendChild(carnPolyline);
+            // Best lap
+            if (gameState.bestLapTime !== Infinity) {
+                document.getElementById('bestLap').textContent = formatTime(gameState.bestLapTime);
             }
+
+            // Speedometer RPM
+            const rpmPercent = (playerCar.rpm / playerCar.maxRPM) * 100;
+            document.getElementById('rpmBar').style.width = rpmPercent + '%';
+
+            // Gear display
+            const gearNames = ['R', 'N', '1', '2', '3', '4', '5', '6'];
+            document.getElementById('gearDisplay').textContent = gearNames[playerCar.gear + 1];
+
+            // Health
+            document.getElementById('healthValue').textContent = Math.ceil(playerCar.health);
+            document.getElementById('healthBar').style.width = playerCar.health + '%';
+
+            // Leaderboard
+            const lb = document.getElementById('leaderboard');
+            let html = '<div class="leaderboard-title">⚡ RIVALS</div>';
+            allCars.forEach((car, idx) => {
+                const isBest = car === playerCar ? ' best' : '';
+                const laps = Math.floor(car.checkpointsPassed / Math.floor(track.trackPoints.length / 8));
+                html += `<div class="leaderboard-entry${isBest}">${idx + 1}. ${car.name || 'PLAYER'} - LAP ${laps}</div>`;
+            });
+            lb.innerHTML = html;
         }
-
-        function addLog(message) {
-            const log = document.getElementById('eventLog');
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.textContent = `[${simulation.generation}] ${message}`;
-            log.insertBefore(entry, log.firstChild);
-
-            if (log.children.length > 20) {
-                log.removeChild(log.lastChild);
-            }
-        }
-
-        // ============================================
-        // CONTROLS
-        // ============================================
-        document.getElementById('pauseBtn').addEventListener('click', () => {
-            simulation.paused = !simulation.paused;
-            document.getElementById('pauseBtn').textContent = simulation.paused ? 'RESUME' : 'PAUSE';
-        });
-
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            initializeSimulation();
-        });
-
-        document.getElementById('addFoodBtn').addEventListener('click', () => {
-            for (let i = 0; i < 50; i++) {
-                simulation.food.push(new Food(
-                    Math.random() * canvas.width,
-                    Math.random() * canvas.height
-                ));
-            }
-            addLog('Added 50 food items');
-        });
-
-        document.getElementById('speedSlider').addEventListener('change', (e) => {
-            simulation.speed = parseInt(e.target.value);
-        });
 
         // ============================================
         // MAIN LOOP
         // ============================================
         function gameLoop() {
-            const stepsPerFrame = simulation.speed;
-            for (let i = 0; i < stepsPerFrame; i++) {
-                updateSimulation();
-            }
-
-            renderSimulation();
-            updateHUD();
+            update();
+            render();
             requestAnimationFrame(gameLoop);
         }
 
-        // Start
-        initializeSimulation();
+        // Start game
+        document.getElementById('loadingScreen').classList.add('hidden');
+        playerCar.lapStartTime = gameState.gameTime;
         gameLoop();
     </script>
 </body>
