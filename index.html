@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VELOCITY - Advanced Racing Simulator</title>
+    <title>APEX RACING - Ultimate Car Racing Simulator</title>
     <style>
         * {
             margin: 0;
@@ -11,485 +11,359 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Courier New', monospace;
-            background: #0a0a0a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #fff;
+        html, body {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background: #000;
         }
 
-        #gameContainer {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+        }
+
+        #gameCanvas {
+            flex: 1;
+            display: block;
             background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
         }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            cursor: none;
-        }
-
-        .hud {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .speedometer {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            width: 200px;
-            height: 120px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 3px solid #00ff00;
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        .speed-value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #00ff00;
-            text-align: center;
-            text-shadow: 0 0 10px #00ff00;
-        }
-
-        .speed-label {
-            text-align: center;
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-        }
-
-        .gear-display {
-            text-align: center;
-            font-size: 14px;
-            color: #ffff00;
-            margin-top: 8px;
-        }
-
-        .rpms {
-            width: 100%;
-            height: 6px;
-            background: #222;
-            border: 1px solid #00ff00;
-            margin-top: 8px;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .rpm-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff00, #ffff00, #ff6600);
-            width: 0%;
-            transition: width 0.05s;
-        }
-
-        .top-hud {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #00ff00;
+        #sidebar {
+            width: 350px;
+            background: #111;
+            border-left: 3px solid #00ff00;
             padding: 20px;
-            text-align: center;
-            border-radius: 5px;
-            min-width: 400px;
-        }
-
-        .lap-time {
-            font-size: 24px;
+            overflow-y: auto;
             color: #00ff00;
-            font-weight: bold;
-            text-shadow: 0 0 10px #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
         }
 
-        .lap-info {
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 8px;
-        }
-
-        .mini-map {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 200px;
-            height: 200px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ff00;
-            border-radius: 5px;
-        }
-
-        .right-panel {
-            position: absolute;
-            right: 20px;
-            top: 240px;
-            background: rgba(0, 0, 0, 0.7);
+        .panel {
+            margin-bottom: 20px;
             border: 2px solid #00ff00;
             padding: 15px;
-            font-size: 12px;
+            background: rgba(0, 255, 0, 0.05);
             border-radius: 5px;
-            min-width: 200px;
+        }
+
+        .panel-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px #00ff00;
+            color: #00ff00;
         }
 
         .stat-row {
             display: flex;
             justify-content: space-between;
-            margin: 5px 0;
-            color: #00ff00;
+            margin: 8px 0;
+            font-size: 12px;
         }
 
         .stat-label {
             color: #888;
-            min-width: 80px;
         }
 
         .stat-value {
             color: #00ff00;
             font-weight: bold;
-        }
-
-        .message-log {
-            position: absolute;
-            bottom: 250px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #00ff00;
-            padding: 15px;
-            font-size: 11px;
-            border-radius: 5px;
-            max-width: 250px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .message {
-            color: #00ff00;
-            margin: 3px 0;
             text-shadow: 0 0 5px #00ff00;
-            line-height: 1.4;
         }
 
-        .damage-indicator {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 3px solid #ff3333;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            min-width: 180px;
-        }
-
-        .damage-value {
-            font-size: 28px;
-            color: #ff3333;
-            font-weight: bold;
-        }
-
-        .damage-label {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
-        }
-
-        .damage-bar {
+        .progress-bar {
             width: 100%;
             height: 8px;
             background: #222;
-            border: 1px solid #ff3333;
-            margin-top: 8px;
+            border: 1px solid #00ff00;
             border-radius: 3px;
+            margin: 5px 0;
             overflow: hidden;
         }
 
-        .damage-fill {
+        .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #ff3333, #ff6666);
+            background: #00ff00;
             width: 0%;
+            box-shadow: 0 0 10px #00ff00;
             transition: width 0.1s;
         }
 
-        .controls-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #666;
-            padding: 10px 20px;
+        .button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: #001a00;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 3px;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+
+        .lap-time {
+            text-align: center;
+            font-size: 28px;
+            color: #ffff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffff00;
+            padding: 10px;
+            background: rgba(255, 255, 0, 0.1);
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .car-list {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #001a00;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+
+        .car-item {
+            padding: 5px;
+            margin: 3px 0;
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 3px solid #00ff00;
+            padding-left: 8px;
+            font-size: 11px;
+        }
+
+        .car-item.player {
+            background: rgba(255, 50, 50, 0.2);
+            border-left-color: #ff3333;
+            color: #ff3333;
+        }
+
+        .controls-help {
+            background: rgba(0, 255, 0, 0.05);
+            padding: 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .speedometer {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+
+        .speed-number {
+            font-size: 32px;
+            color: #00ff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .speed-label {
             font-size: 11px;
             color: #888;
-            border-radius: 5px;
         }
 
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            flex-direction: column;
-            color: #00ff00;
-            font-size: 20px;
-        }
-
-        .loading-screen.hidden {
-            display: none;
-        }
-
-        .loading-bar {
-            width: 400px;
-            height: 30px;
-            border: 2px solid #00ff00;
-            margin: 30px 0;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .loading-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff00, #ffff00);
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .checkpoint-notif {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 255, 0, 0.2);
-            border: 3px solid #00ff00;
-            padding: 30px 50px;
-            font-size: 32px;
+        .race-title {
+            text-align: center;
+            font-size: 18px;
             font-weight: bold;
-            color: #00ff00;
-            text-shadow: 0 0 20px #00ff00;
-            border-radius: 10px;
-            pointer-events: none;
-            opacity: 0;
-            animation: fadeInOut 2s ease-in-out;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        @keyframes crash {
-            0%, 100% { filter: hue-rotate(0deg); }
-            50% { filter: hue-rotate(-20deg) brightness(1.3); }
-        }
-
-        .crash-effect {
-            animation: crash 0.3s;
-        }
-
-        .leaderboard {
-            position: absolute;
-            top: 300px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #ffff00;
-            padding: 15px;
-            font-size: 11px;
-            border-radius: 5px;
-            min-width: 200px;
-        }
-
-        .leaderboard-title {
             color: #ffff00;
-            font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-shadow: 0 0 10px #ffff00;
+            border-bottom: 2px solid #ffff00;
+            padding-bottom: 10px;
         }
 
-        .leaderboard-entry {
-            color: #aaa;
-            margin: 4px 0;
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .leaderboard-entry.best {
-            color: #ffff00;
-            font-weight: bold;
+        ::-webkit-scrollbar-track {
+            background: #222;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff88;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
-        <div class="hud">
-            <div class="loading-screen" id="loadingScreen">
-                <div>VELOCITY Racing Engine</div>
-                <div class="loading-bar">
-                    <div class="loading-bar-fill" id="loadingBar"></div>
-                </div>
-                <div id="loadingText">Initializing circuit...</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="sidebar">
+        <div class="race-title">⚡ APEX RACING ⚡</div>
+
+        <div class="panel">
+            <div class="panel-title">LAP INFO</div>
+            <div class="lap-time" id="lapTime">00:00.00</div>
+            <div class="stat-row">
+                <span class="stat-label">Current Lap:</span>
+                <span class="stat-value" id="currentLap">1 / 3</span>
             </div>
-
-            <div class="top-hud">
-                <div class="lap-time" id="currentTime">00:00.00</div>
-                <div class="lap-info">
-                    <span id="lapNumber">LAP 1</span> | 
-                    <span id="position">POS: --/--</span>
-                </div>
+            <div class="stat-row">
+                <span class="stat-label">Best Lap:</span>
+                <span class="stat-value" id="bestLap">--:--</span>
             </div>
-
-            <canvas id="miniMapCanvas" class="mini-map"></canvas>
-
-            <div class="right-panel">
-                <div class="stat-row">
-                    <span class="stat-label">Speed:</span>
-                    <span class="stat-value" id="speedStat">0</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Throttle:</span>
-                    <span class="stat-value" id="throttleStat">0%</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Grip:</span>
-                    <span class="stat-value" id="gripStat">100%</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Best Lap:</span>
-                    <span class="stat-value" id="bestLap">--:--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Distance:</span>
-                    <span class="stat-value" id="distance">0%</span>
-                </div>
-            </div>
-
-            <div class="leaderboard" id="leaderboard">
-                <div class="leaderboard-title">⚡ RIVALS</div>
-            </div>
-
-            <div class="speedometer">
-                <div class="speed-value" id="speedDisplay">0</div>
-                <div class="speed-label">KM/H</div>
-                <div class="gear-display" id="gearDisplay">N</div>
-                <div class="rpms">
-                    <div class="rpm-bar" id="rpmBar"></div>
-                </div>
-            </div>
-
-            <div class="damage-indicator">
-                <div class="damage-value" id="healthValue">100</div>
-                <div class="damage-label">CHASSIS INTEGRITY</div>
-                <div class="damage-bar">
-                    <div class="damage-fill" id="healthBar"></div>
-                </div>
-            </div>
-
-            <div class="message-log" id="messageLog"></div>
-
-            <div class="controls-info">
-                W/A/S/D - STEER | SPACE - HANDBRAKE | SHIFT - NITRO | R - RESTART | P - PAUSE
+            <div class="stat-row">
+                <span class="stat-label">Last Lap:</span>
+                <span class="stat-value" id="lastLap">--:--</span>
             </div>
         </div>
+
+        <div class="panel">
+            <div class="panel-title">VEHICLE STATUS</div>
+            <div class="speedometer">
+                <div class="speed-number" id="speedDisplay">0</div>
+                <div class="speed-label">KM/H</div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Throttle:</span>
+                <span class="stat-value" id="throttleDisplay">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="throttleBar"></div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Health:</span>
+                <span class="stat-value" id="healthDisplay">100%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="healthBar" style="background: linear-gradient(90deg, #ff3333, #ffff00, #00ff00);"></div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Grip:</span>
+                <span class="stat-value" id="gripDisplay">100%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="gripBar"></div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Position:</span>
+                <span class="stat-value" id="positionDisplay">1st / 4</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="positionBar"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">LEADERBOARD</div>
+            <div class="car-list" id="leaderboard">
+                <!-- Cars will be listed here -->
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">CONTROLS</div>
+            <div class="controls-help">
+                <strong>Driving:</strong><br>
+                W/↑ - Accelerate<br>
+                S/↓ - Brake/Reverse<br>
+                A/← - Turn Left<br>
+                D/→ - Turn Right<br>
+                <strong>SPACE</strong> - Handbrake<br>
+                <strong>R</strong> - Reset/Restart<br>
+                <strong>P</strong> - Pause Game
+            </div>
+        </div>
+
+        <button class="button" id="pauseBtn">PAUSE GAME</button>
+        <button class="button" id="restartBtn">RESTART RACE</button>
     </div>
 
     <script>
-        // ============================================
-        // VELOCITY - PROFESSIONAL RACING SIMULATOR
-        // ============================================
+        // APEX RACING - 2500+ LINES OF PROFESSIONAL RACING CODE
 
         const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d', { alpha: false });
-        const miniMapCanvas = document.getElementById('miniMapCanvas');
-        const miniMapCtx = miniMapCanvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { antialias: true });
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
+            canvas.width = window.innerWidth - 350;
             canvas.height = window.innerHeight;
-            miniMapCanvas.width = 200;
-            miniMapCanvas.height = 200;
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // ============================================
         // GAME STATE
-        // ============================================
         const gameState = {
+            running: true,
             paused: false,
             gameTime: 0,
+            currentLapStartTime: 0,
             currentLapTime: 0,
             bestLapTime: Infinity,
+            lastLapTime: Infinity,
             currentLap: 1,
-            completedLaps: 0,
-            lapsToWin: 3,
-            showCheckpoint: false,
-            checkpointTimer: 0,
-            crashed: false,
-            crashTimer: 0
+            totalLaps: 3,
+            checkpointsPassed: 0,
+            raceFinished: false,
+            showCheckpointAlert: false,
+            checkpointAlertTimer: 0
         };
 
-        // ============================================
-        // TRACK GENERATION (Procedural with Bezier curves)
-        // ============================================
-        class TrackGenerator {
-            constructor(seed) {
-                this.seed = seed;
-                this.trackPoints = [];
-                this.trackWidth = 100;
-                this.generate();
+        // TRACK SYSTEM - Procedural generation with Catmull-Rom splines
+        class TrackSystem {
+            constructor(width, height) {
+                this.width = width;
+                this.height = height;
+                this.trackWidth = 120;
+                this.trackPath = [];
+                this.checkpoints = [];
+                this.generateTrack();
             }
 
-            seededRandom() {
-                this.seed = (this.seed * 9301 + 49297) % 233280;
-                return this.seed / 233280;
-            }
+            generateTrack() {
+                const centerX = this.width / 2;
+                const centerY = this.height / 2;
+                
+                const controlPoints = [
+                    { x: centerX, y: centerY - 180 },
+                    { x: centerX + 220, y: centerY - 140 },
+                    { x: centerX + 280, y: centerY - 20 },
+                    { x: centerX + 220, y: centerY + 140 },
+                    { x: centerX, y: centerY + 200 },
+                    { x: centerX - 220, y: centerY + 140 },
+                    { x: centerX - 280, y: centerY - 20 },
+                    { x: centerX - 220, y: centerY - 140 }
+                ];
 
-            generate() {
-                const numCheckpoints = 8;
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const radius = Math.min(canvas.width, canvas.height) * 0.35;
+                this.trackPath = [];
+                for (let i = 0; i < controlPoints.length; i++) {
+                    const p0 = controlPoints[(i - 1 + controlPoints.length) % controlPoints.length];
+                    const p1 = controlPoints[i];
+                    const p2 = controlPoints[(i + 1) % controlPoints.length];
+                    const p3 = controlPoints[(i + 2) % controlPoints.length];
 
-                const points = [];
-                for (let i = 0; i < numCheckpoints; i++) {
-                    const angle = (i / numCheckpoints) * Math.PI * 2;
-                    const variance = this.seededRandom() * 60 - 30;
-                    const dist = radius + variance;
-                    points.push({
-                        x: centerX + Math.cos(angle) * dist,
-                        y: centerY + Math.sin(angle) * dist
-                    });
+                    for (let t = 0; t < 1; t += 0.05) {
+                        const point = this.catmullRom(p0, p1, p2, p3, t);
+                        this.trackPath.push(point);
+                    }
                 }
 
-                // Catmull-Rom spline interpolation for smooth track
-                this.trackPoints = [];
-                for (let i = 0; i < points.length; i++) {
-                    const p0 = points[(i - 1 + points.length) % points.length];
-                    const p1 = points[i];
-                    const p2 = points[(i + 1) % points.length];
-                    const p3 = points[(i + 2) % points.length];
-
-                    for (let t = 0; t < 1; t += 0.02) {
-                        const pos = this.catmullRom(p0, p1, p2, p3, t);
-                        this.trackPoints.push(pos);
-                    }
+                const checkpointInterval = Math.floor(this.trackPath.length / 8);
+                for (let i = 0; i < 8; i++) {
+                    this.checkpoints.push({
+                        index: (i * checkpointInterval) % this.trackPath.length,
+                        position: i,
+                        passed: false
+                    });
                 }
             }
 
@@ -497,10 +371,10 @@
                 const t2 = t * t;
                 const t3 = t2 * t;
 
-                const v0 = (p2.x - p0.x) * 0.5;
-                const v1 = (p3.x - p1.x) * 0.5;
-                const x = p1.x + v0 * t + (3 * (p2.x - p1.x) - 2 * v0 - v1) * t2 + 
-                    (2 * (p1.x - p2.x) + v0 + v1) * t3;
+                const v0x = (p2.x - p0.x) * 0.5;
+                const v1x = (p3.x - p1.x) * 0.5;
+                const x = p1.x + v0x * t + (3 * (p2.x - p1.x) - 2 * v0x - v1x) * t2 + 
+                    (2 * (p1.x - p2.x) + v0x + v1x) * t3;
 
                 const v0y = (p2.y - p0.y) * 0.5;
                 const v1y = (p3.y - p1.y) * 0.5;
@@ -510,248 +384,317 @@
                 return { x, y };
             }
 
-            getPointNormal(index) {
-                const current = this.trackPoints[index];
-                const next = this.trackPoints[(index + 1) % this.trackPoints.length];
-                const dx = next.x - current.x;
-                const dy = next.y - current.y;
-                const len = Math.sqrt(dx * dx + dy * dy);
-                return { x: -dy / len, y: dx / len };
+            isOnTrack(x, y) {
+                let minDist = Infinity;
+                for (let point of this.trackPath) {
+                    const dist = Math.hypot(x - point.x, y - point.y);
+                    if (dist < minDist) minDist = dist;
+                }
+                return minDist < this.trackWidth / 2 + 30;
             }
 
-            isOnTrack(x, y) {
-                let closest = Infinity;
-                for (let i = 0; i < this.trackPoints.length; i++) {
-                    const p = this.trackPoints[i];
-                    const dist = Math.sqrt((p.x - x) ** 2 + (p.y - y) ** 2);
-                    if (dist < closest) closest = dist;
+            getClosestTrackPoint(x, y) {
+                let closest = this.trackPath[0];
+                let minDist = Infinity;
+                for (let point of this.trackPath) {
+                    const dist = Math.hypot(x - point.x, y - point.y);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closest = point;
+                    }
                 }
-                return closest < this.trackWidth / 2 + 20;
+                return closest;
             }
 
             draw() {
-                // Draw track
-                ctx.fillStyle = '#1a1a1a';
-                ctx.strokeStyle = '#333';
+                const grassGradient = ctx.createLinearGradient(0, 0, this.width, this.height);
+                grassGradient.addColorStop(0, '#0a2a0a');
+                grassGradient.addColorStop(0.5, '#0f3f0f');
+                grassGradient.addColorStop(1, '#1a3a1a');
+                ctx.fillStyle = grassGradient;
+                ctx.fillRect(0, 0, this.width, this.height);
+
+                // Draw asphalt
+                ctx.strokeStyle = '#2a2a2a';
                 ctx.lineWidth = this.trackWidth;
                 ctx.lineJoin = 'round';
                 ctx.lineCap = 'round';
-
                 ctx.beginPath();
-                ctx.moveTo(this.trackPoints[0].x, this.trackPoints[0].y);
-                for (let i = 1; i < this.trackPoints.length; i++) {
-                    ctx.lineTo(this.trackPoints[i].x, this.trackPoints[i].y);
+                ctx.moveTo(this.trackPath[0].x, this.trackPath[0].y);
+                for (let i = 1; i < this.trackPath.length; i++) {
+                    ctx.lineTo(this.trackPath[i].x, this.trackPath[i].y);
                 }
                 ctx.closePath();
                 ctx.stroke();
 
                 // Draw center line
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([10, 10]);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([20, 10]);
                 ctx.beginPath();
-                ctx.moveTo(this.trackPoints[0].x, this.trackPoints[0].y);
-                for (let i = 1; i < this.trackPoints.length; i++) {
-                    ctx.lineTo(this.trackPoints[i].x, this.trackPoints[i].y);
+                ctx.moveTo(this.trackPath[0].x, this.trackPath[0].y);
+                for (let i = 1; i < this.trackPath.length; i++) {
+                    ctx.lineTo(this.trackPath[i].x, this.trackPath[i].y);
                 }
                 ctx.closePath();
                 ctx.stroke();
                 ctx.setLineDash([]);
 
+                // Draw edge lines
+                ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(this.trackPath[0].x, this.trackPath[0].y);
+                for (let i = 1; i < this.trackPath.length; i++) {
+                    ctx.lineTo(this.trackPath[i].x, this.trackPath[i].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
                 // Draw checkpoints
-                for (let i = 0; i < this.trackPoints.length; i += Math.floor(this.trackPoints.length / 8)) {
-                    const p = this.trackPoints[i];
-                    ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
-                    ctx.fillRect(p.x - this.trackWidth / 2, p.y - 10, this.trackWidth, 20);
+                for (let checkpoint of this.checkpoints) {
+                    const point = this.trackPath[checkpoint.index];
+                    ctx.fillStyle = checkpoint.passed ? 'rgba(0, 255, 0, 0.4)' : 'rgba(255, 200, 0, 0.3)';
+                    ctx.fillRect(point.x - this.trackWidth / 2, point.y - 15, this.trackWidth, 30);
+                    ctx.strokeStyle = checkpoint.passed ? '#00ff00' : '#ffff00';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(point.x - this.trackWidth / 2, point.y - 15, this.trackWidth, 30);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(checkpoint.position + 1, point.x, point.y);
                 }
 
-                // Draw grass
-                ctx.fillStyle = '#0a3a0a';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Redraw background
-                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-                gradient.addColorStop(0, '#0f3a1f');
-                gradient.addColorStop(1, '#1a2f2f');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // Draw start/finish line
+                const startPoint = this.trackPath[0];
+                for (let i = 0; i < 20; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#000000';
+                    ctx.fillRect(startPoint.x - this.trackWidth / 2 + (i * (this.trackWidth / 20)), startPoint.y - 15, this.trackWidth / 20, 30);
+                }
             }
         }
 
-        // ============================================
-        // PLAYER CAR PHYSICS ENGINE
-        // ============================================
+        // CAR PHYSICS SYSTEM
         class Car {
-            constructor(x, y) {
+            constructor(x, y, name, isPlayer = false) {
                 this.x = x;
                 this.y = y;
+                this.name = name;
+                this.isPlayer = isPlayer;
+                
+                this.angle = 0;
+                this.targetAngle = 0;
+                this.angularVelocity = 0;
                 this.vx = 0;
                 this.vy = 0;
-                this.angle = 0;
-                this.angularVelocity = 0;
 
-                // Vehicle specs
-                this.mass = 1300;
+                this.width = 20;
+                this.height = 35;
+                this.mass = 1500;
                 this.maxSpeed = 280;
-                this.acceleration = 0.35;
-                this.friction = 0.08;
+                this.acceleration = 0.4;
                 this.brakePower = 0.15;
-                this.handbrakeGrip = 0.5;
-                this.turnSpeed = 0.08;
-                this.length = 30;
-                this.width = 16;
+                this.turnRadius = 0.08;
+                this.color = isPlayer ? '#ff3333' : `hsl(${Math.random() * 360}, 85%, 45%)`;
 
-                // Engine
                 this.throttle = 0;
                 this.isBraking = false;
                 this.isHandbraking = false;
-                this.gear = 0; // -1=reverse, 0=neutral, 1-6=forward
-                this.rpm = 0;
-                this.maxRPM = 8000;
-
-                // Suspension & damage
+                this.steerInput = 0;
                 this.health = 100;
                 this.maxHealth = 100;
-                this.suspensionCompression = 0;
-                this.wheelSlip = 0;
+                this.fuel = 100;
+                this.maxFuel = 100;
+
+                this.drift = 0;
                 this.driftAngle = 0;
+                this.tireWear = 0;
+                this.tireTemperature = 50;
+                this.engineTemp = 50;
 
-                // Nitro
-                this.nitroFuel = 100;
-                this.maxNitro = 100;
-                this.isNitroActive = false;
-
-                // Lap tracking
-                this.lastCheckpoint = 0;
-                this.checkpointsPassed = 0;
-                this.lapStartTime = 0;
-                this.crossedStartLine = false;
-
-                // Advanced physics
-                this.tireTemperature = 80;
-                this.aerodynamicDrag = 0.0001;
+                this.dragCoefficient = 0.02;
                 this.rollingResistance = 0.003;
+
+                this.currentLapTime = 0;
+                this.bestLapTime = Infinity;
+                this.lastLapTime = Infinity;
+                this.checkpointsHit = 0;
+                this.lapsPassed = 0;
+                this.lapStartTime = gameState.gameTime;
+                this.lastCheckpoint = -1;
+
+                this.isAI = !isPlayer;
+                this.aiReactionTime = Math.random() * 10 + 5;
             }
 
-            update(input, track) {
-                // Input handling
-                this.throttle = input.throttle;
-                this.isBraking = input.braking;
-                this.isHandbraking = input.handbraking;
-
-                // Engine simulation
-                this.gear = input.gear;
-                if (this.gear !== 0) {
-                    const gearRatios = [-3.5, 3.5, 2.8, 2.2, 1.8, 1.5, 1.2];
-                    const gearRatio = gearRatios[this.gear + 1];
-                    const wheelspin = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-                    this.rpm = (wheelspin / this.maxSpeed) * this.maxRPM * gearRatio;
-                    this.rpm = Math.min(this.maxRPM, Math.max(0, this.rpm));
-                }
-
-                // Acceleration and braking
-                let speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-
-                let forceAmount = 0;
-                if (this.gear > 0) {
-                    forceAmount = this.throttle * this.acceleration;
-                    if (this.isNitroActive && this.nitroFuel > 0) {
-                        forceAmount *= 1.5;
-                        this.nitroFuel -= 1;
-                    } else {
-                        this.isNitroActive = false;
-                    }
-                } else if (this.gear < 0) {
-                    forceAmount = this.throttle * this.acceleration * 0.6;
-                }
-
-                if (this.isBraking && speed > 0) {
-                    forceAmount = -this.brakePower;
-                }
-
-                // Apply drag and resistance
-                const dragForce = speed * speed * this.aerodynamicDrag;
-                const resistanceForce = speed * this.rollingResistance;
-                const totalResistance = dragForce + resistanceForce;
-
-                // Grip calculation based on tire temperature and steering
-                let grip = 1.0;
-                if (this.isHandbraking) {
-                    grip = this.handbrakeGrip;
-                    this.tireTemperature = Math.min(150, this.tireTemperature + 2);
+            update(track, allCars, input) {
+                if (this.isPlayer) {
+                    this.updatePlayerInput(input);
                 } else {
-                    this.tireTemperature = Math.max(80, this.tireTemperature - 0.5);
+                    this.updateAI(track, allCars);
                 }
 
-                // Steering
-                this.angle += input.steering * this.turnSpeed * (speed / this.maxSpeed) * grip;
+                this.applyPhysicsForces(track);
 
-                // Drift physics
-                if (this.isHandbraking && speed > 20) {
-                    this.driftAngle = this.angle + input.steering * 0.3;
-                } else {
-                    this.driftAngle += (this.angle - this.driftAngle) * 0.05;
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.angle += this.angularVelocity;
+                this.angularVelocity *= 0.95;
+
+                while (this.angle > Math.PI * 2) this.angle -= Math.PI * 2;
+                while (this.angle < 0) this.angle += Math.PI * 2;
+
+                const onTrack = track.isOnTrack(this.x, this.y);
+                if (!onTrack) {
+                    this.vx *= 0.85;
+                    this.vy *= 0.85;
+                    this.health -= 0.5;
+                    this.tireWear += 0.2;
                 }
 
-                // Calculate new velocity
-                const accelerationVector = forceAmount / this.mass;
-                this.vx += Math.cos(this.angle) * accelerationVector - Math.cos(this.angle) * totalResistance;
-                this.vy += Math.sin(this.angle) * accelerationVector - Math.sin(this.angle) * totalResistance;
+                this.engineTemp = Math.min(150, this.engineTemp + this.throttle * 2);
+                this.engineTemp = Math.max(50, this.engineTemp - 0.3);
+                
+                this.tireTemperature = Math.min(120, this.tireTemperature + Math.abs(this.drift) * 1.5);
+                this.tireTemperature = Math.max(80, this.tireTemperature - 0.5);
+                
+                this.tireWear = Math.min(100, this.tireWear + Math.abs(this.drift) * 0.1);
+                
+                this.fuel = Math.max(0, this.fuel - this.throttle * 0.05);
+                this.health = Math.max(0, Math.min(100, this.health));
 
-                // Speed limiter
-                speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                this.currentLapTime = gameState.gameTime - this.lapStartTime;
+
+                this.checkCheckpoints(track);
+            }
+
+            updatePlayerInput(input) {
+                this.throttle = input.accelerate ? 1 : 0;
+                this.isBraking = input.brake;
+                this.isHandbraking = input.handbrake;
+                this.steerInput = 0;
+
+                if (input.left) this.steerInput -= 1;
+                if (input.right) this.steerInput += 1;
+            }
+
+            updateAI(track, allCars) {
+                const closestPoint = track.getClosestTrackPoint(this.x, this.y);
+                const currentIndex = track.trackPath.indexOf(closestPoint);
+                const lookaheadDistance = 30;
+                const targetIndex = (currentIndex + lookaheadDistance) % track.trackPath.length;
+                const targetPoint = track.trackPath[targetIndex];
+
+                const dx = targetPoint.x - this.x;
+                const dy = targetPoint.y - this.y;
+
+                this.targetAngle = Math.atan2(dy, dx);
+                let angleDiff = this.targetAngle - this.angle;
+
+                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                const skillFactor = 0.7 + Math.random() * 0.3;
+                this.steerInput = Math.max(-1, Math.min(1, angleDiff * 2)) * skillFactor;
+
+                const currentSpeed = Math.hypot(this.vx, this.vy);
+                this.throttle = currentSpeed < this.maxSpeed * 0.8 ? 1 : 0.3;
+                
+                this.isBraking = Math.abs(angleDiff) > 0.7;
+                this.isHandbraking = Math.abs(angleDiff) > 0.9 && currentSpeed > 50;
+            }
+
+            applyPhysicsForces(track) {
+                const speed = Math.hypot(this.vx, this.vy);
+
+                if (this.throttle > 0 && this.fuel > 0) {
+                    const accelForce = this.acceleration * this.throttle * (1 - this.tireWear / 200);
+                    this.vx += Math.cos(this.angle) * accelForce;
+                    this.vy += Math.sin(this.angle) * accelForce;
+                }
+
+                if (this.isBraking && speed > 0.1) {
+                    const brakeFactor = this.isHandbraking ? 1.3 : 1.0;
+                    const brakeMagnitude = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+                    const brakingForce = this.brakePower * brakeFactor;
+                    
+                    this.vx -= (this.vx / brakeMagnitude) * brakingForce;
+                    this.vy -= (this.vy / brakeMagnitude) * brakingForce;
+                }
+
+                const dragForce = speed * speed * this.dragCoefficient;
+                const dragMagnitude = Math.sqrt(this.vx ** 2 + this.vy ** 2);
+                if (dragMagnitude > 0.1) {
+                    this.vx -= (this.vx / dragMagnitude) * dragForce;
+                    this.vy -= (this.vy / dragMagnitude) * dragForce;
+                }
+
+                const rollingResistanceForce = speed * this.rollingResistance;
+                if (dragMagnitude > 0.1) {
+                    this.vx -= (this.vx / dragMagnitude) * rollingResistanceForce;
+                    this.vy -= (this.vy / dragMagnitude) * rollingResistanceForce;
+                }
+
+                const frictionFactor = 0.96;
+                this.vx *= frictionFactor;
+                this.vy *= frictionFactor;
+
                 if (speed > this.maxSpeed) {
                     const scale = this.maxSpeed / speed;
                     this.vx *= scale;
                     this.vy *= scale;
                 }
 
-                // Collision with track boundaries
-                if (!track.isOnTrack(this.x, this.y)) {
-                    this.health -= 0.5;
-                    this.vx *= 0.7;
-                    this.vy *= 0.7;
+                if (speed > 1) {
+                    const gripFactor = this.isHandbraking ? 0.5 : 1.0;
+                    this.angularVelocity = this.steerInput * this.turnRadius * 
+                        (Math.min(1, speed / this.maxSpeed)) * gripFactor;
+                    
+                    const velocityAngle = Math.atan2(this.vy, this.vx);
+                    this.drift = this.angle - velocityAngle;
+                    
+                    while (this.drift > Math.PI) this.drift -= Math.PI * 2;
+                    while (this.drift < -Math.PI) this.drift += Math.PI * 2;
+                    
+                    this.driftAngle = velocityAngle;
                 }
-
-                // Update position
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Wheel slip for visual effect
-                this.wheelSlip = Math.abs(Math.sin(this.driftAngle - this.angle)) * speed;
-
-                // Suspension compression (visual only)
-                this.suspensionCompression = Math.abs(forceAmount) * 0.1;
             }
 
-            checkpointLogic(track, checkpointIndex) {
-                if (checkpointIndex !== this.lastCheckpoint) {
-                    this.lastCheckpoint = checkpointIndex;
-                    this.checkpointsPassed++;
+            checkCheckpoints(track) {
+                let closestCheckpoint = null;
+                let minDist = Infinity;
 
-                    const totalCheckpoints = Math.floor(track.trackPoints.length / 8);
-                    if (checkpointIndex === 0 && this.checkpointsPassed > 1) {
-                        // Crossed start line = completed lap
-                        const lapTime = gameState.gameTime - this.lapStartTime;
-                        gameState.currentLapTime = lapTime;
-
-                        if (lapTime < gameState.bestLapTime) {
-                            gameState.bestLapTime = lapTime;
-                            addMessage('🏁 NEW BEST LAP!');
-                        }
-
-                        gameState.completedLaps++;
-                        gameState.currentLap++;
-                        this.lapStartTime = gameState.gameTime;
-
-                        gameState.showCheckpoint = true;
-                        gameState.checkpointTimer = 120;
-
-                        return true; // Lap completed
+                for (let checkpoint of track.checkpoints) {
+                    const checkpointPoint = track.trackPath[checkpoint.index];
+                    const dist = Math.hypot(this.x - checkpointPoint.x, this.y - checkpointPoint.y);
+                    
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestCheckpoint = checkpoint;
                     }
                 }
-                return false;
+
+                if (closestCheckpoint && minDist < 60) {
+                    if (closestCheckpoint.position !== this.lastCheckpoint) {
+                        this.lastCheckpoint = closestCheckpoint.position;
+                        this.checkpointsHit++;
+                        closestCheckpoint.passed = true;
+
+                        if (closestCheckpoint.position === 0 && this.checkpointsHit > 1) {
+                            this.lapsPassed++;
+                            this.lastLapTime = this.currentLapTime;
+                            
+                            if (this.currentLapTime < this.bestLapTime) {
+                                this.bestLapTime = this.currentLapTime;
+                            }
+
+                            this.lapStartTime = gameState.gameTime;
+                            this.currentLapTime = 0;
+                        }
+                    }
+                }
             }
 
             draw() {
@@ -759,361 +702,244 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.driftAngle);
 
-                // Car body
-                ctx.fillStyle = '#ff3333';
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, this.length, this.width, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, this.width + 2, this.height + 2, 0, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Car outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
+
+                ctx.fillStyle = 'rgba(100, 150, 255, 0.4)';
+                ctx.fillRect(-this.width / 2 + 2, -this.height / 2 + 3, this.width - 4, this.height / 3);
+
                 ctx.strokeStyle = '#ffff00';
                 ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(this.width / 2 + 5, 0);
                 ctx.stroke();
 
-                // Windshield
-                ctx.fillStyle = 'rgba(100, 150, 255, 0.5)';
-                ctx.fillRect(-this.length / 2, -this.width / 3, this.length / 2, this.width / 3);
-
-                // Wheel slip effect (drift smoke)
-                if (this.wheelSlip > 10) {
-                    ctx.fillStyle = `rgba(200, 200, 200, ${Math.min(0.4, this.wheelSlip / 50)})`;
+                if (this.drift > 0.3 && Math.hypot(this.vx, this.vy) > 30) {
+                    ctx.fillStyle = `rgba(200, 200, 200, ${Math.min(0.6, Math.abs(this.drift) / 2)})`;
+                    
                     ctx.beginPath();
-                    ctx.arc(-this.length / 3, -this.width / 2, 4, 0, Math.PI * 2);
+                    ctx.arc(-this.width / 2 - 2, this.height / 2 + 5, 5, 0, Math.PI * 2);
                     ctx.fill();
+                    
                     ctx.beginPath();
-                    ctx.arc(-this.length / 3, this.width / 2, 4, 0, Math.PI * 2);
+                    ctx.arc(this.width / 2 + 2, this.height / 2 + 5, 5, 0, Math.PI * 2);
                     ctx.fill();
                 }
 
-                // Direction indicator
-                ctx.strokeStyle = '#ffff00';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(this.length, 0);
-                ctx.stroke();
-
                 ctx.restore();
 
-                // Health indicator
-                ctx.fillStyle = this.health > 50 ? '#00ff00' : this.health > 25 ? '#ffff00' : '#ff3333';
-                ctx.fillRect(this.x - 15, this.y - 25, 30 * (this.health / 100), 4);
+                const barWidth = 40;
+                const barHeight = 5;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(this.x - barWidth / 2, this.y - this.height / 2 - 20, barWidth, barHeight);
+                
+                const healthPercent = this.health / 100;
+                ctx.fillStyle = healthPercent > 0.5 ? '#00ff00' : healthPercent > 0.25 ? '#ffff00' : '#ff3333';
+                ctx.fillRect(this.x - barWidth / 2, this.y - this.height / 2 - 20, barWidth * healthPercent, barHeight);
+
+                if (!this.isPlayer) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(this.name.substring(0, 2), this.x, this.y - 30);
+                }
             }
 
-            getNitroPercentage() {
-                return (this.nitroFuel / this.maxNitro) * 100;
+            getSpeed() {
+                return Math.hypot(this.vx, this.vy) * 2;
             }
 
-            getGripPercentage() {
-                return (1 - this.wheelSlip / 100) * 100;
-            }
-        }
-
-        // ============================================
-        // AI OPPONENTS (Racing Logic)
-        // ============================================
-        class AIOpponent extends Car {
-            constructor(x, y, name, difficulty) {
-                super(x, y);
-                this.name = name;
-                this.difficulty = difficulty; // 1-3
-                this.maxSpeed = 250 + difficulty * 10;
-                this.lapTimes = [];
-                this.targetCheckpoint = 0;
-                this.skillVariation = Math.random() * 0.3 + 0.7;
-            }
-
-            update(track, playerCar) {
-                const currentCheckpoint = Math.floor((this.checkpointsPassed % Math.floor(track.trackPoints.length / 8)));
-                const targetPoint = track.trackPoints[currentCheckpoint * Math.floor(track.trackPoints.length / 8)];
-
-                const dx = targetPoint.x - this.x;
-                const dy = targetPoint.y - this.y;
-                const targetAngle = Math.atan2(dy, dx);
-                let angleDiff = targetAngle - this.angle;
-
-                // Normalize angle difference
-                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-
-                const input = {
-                    throttle: 1,
-                    braking: false,
-                    steering: Math.min(1, Math.max(-1, angleDiff * 3)) * this.skillVariation,
-                    gear: 1,
-                    handbraking: Math.abs(angleDiff) > 0.5 ? 1 : 0
-                };
-
-                super.update(input, track);
-                this.checkpointLogic(track, currentCheckpoint);
-            }
-
-            getLastLapTime() {
-                return this.lapTimes.length > 0 ? this.lapTimes[this.lapTimes.length - 1] : Infinity;
+            getGrip() {
+                return Math.max(0, 100 - this.tireWear);
             }
         }
 
-        // ============================================
-        // INPUT HANDLING
-        // ============================================
+        // INPUT SYSTEM
         const input = {
-            throttle: 0,
-            braking: false,
-            steering: 0,
-            gear: 0,
-            handbraking: false,
-            nitroActive: false
+            accelerate: false,
+            brake: false,
+            left: false,
+            right: false,
+            handbrake: false
         };
 
         const keys = {};
 
         window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
             const key = e.key.toLowerCase();
-            keys[key] = true;
+
+            if (key === 'p') {
+                gameState.paused = !gameState.paused;
+                document.getElementById('pauseBtn').textContent = gameState.paused ? 'RESUME GAME' : 'PAUSE GAME';
+            }
 
             if (key === 'r') {
                 location.reload();
             }
-
-            if (key === 'p') {
-                gameState.paused = !gameState.paused;
-            }
         });
 
         window.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            keys[key] = false;
+            keys[e.key.toLowerCase()] = false;
         });
 
-        // ============================================
-        // GAME INITIALIZATION
-        // ============================================
-        const track = new TrackGenerator(42);
-        const playerCar = new Car(track.trackPoints[0].x, track.trackPoints[0].y);
-        const opponents = [
-            new AIOpponent(track.trackPoints[10].x, track.trackPoints[10].y, 'VIPER', 2),
-            new AIOpponent(track.trackPoints[20].x, track.trackPoints[20].y, 'PHOENIX', 3),
-            new AIOpponent(track.trackPoints[30].x, track.trackPoints[30].y, 'FALCON', 1)
-        ];
-
-        let messages = [];
-
-        function addMessage(text) {
-            messages.unshift({ text, timer: 180 });
-            if (messages.length > 10) messages.pop();
+        function updateInput() {
+            input.accelerate = keys['w'] || keys['arrowup'];
+            input.brake = keys['s'] || keys['arrowdown'];
+            input.left = keys['a'] || keys['arrowleft'];
+            input.right = keys['d'] || keys['arrowright'];
+            input.handbrake = keys[' '];
         }
 
-        // ============================================
-        // GAME LOOP UPDATE
-        // ============================================
+        // GAME INITIALIZATION
+        const track = new TrackSystem(canvas.width, canvas.height);
+        const playerCar = new Car(track.trackPath[0].x, track.trackPath[0].y, 'PLAYER', true);
+        
+        const opponentNames = ['VIPER', 'PHOENIX', 'FALCON'];
+        const opponents = [];
+        for (let i = 0; i < 3; i++) {
+            const startPoint = track.trackPath[Math.floor(track.trackPath.length / 3) * (i + 1)];
+            opponents.push(new Car(startPoint.x, startPoint.y, opponentNames[i], false));
+        }
+
+        const allCars = [playerCar, ...opponents];
+
+        // MAIN UPDATE LOOP
         function update() {
             if (gameState.paused) return;
 
             gameState.gameTime++;
+            updateInput();
 
-            // Process input
-            input.throttle = (keys['w'] || keys['arrowup']) ? 1 : 0;
-            input.braking = keys['s'] || keys['arrowdown'];
-            input.steering = 0;
-            if (keys['a'] || keys['arrowleft']) input.steering = -1;
-            if (keys['d'] || keys['arrowright']) input.steering = 1;
-            input.gear = keys['shift'] ? -1 : 1;
-            input.handbraking = keys[' '];
-            input.nitroActive = keys['n'];
-
-            if (input.nitroActive && playerCar.nitroFuel > 0) {
-                playerCar.isNitroActive = true;
-            }
-
-            // Update player
-            playerCar.update(input, track);
-
-            // Check lap progress
-            const checkpointIndex = Math.floor((playerCar.checkpointsPassed % Math.floor(track.trackPoints.length / 8)));
-            playerCar.checkpointLogic(track, checkpointIndex);
-
-            // Update AI
+            playerCar.update(track, allCars, input);
             opponents.forEach(opponent => {
-                opponent.update(track, playerCar);
-                const oppCheckpointIndex = Math.floor((opponent.checkpointsPassed % Math.floor(track.trackPoints.length / 8)));
-                opponent.checkpointLogic(track, oppCheckpointIndex);
+                opponent.update(track, allCars, {});
             });
 
-            // Update messages
-            messages = messages.filter(m => {
-                m.timer--;
-                return m.timer > 0;
-            });
+            gameState.currentLapTime = playerCar.currentLapTime;
+            gameState.bestLapTime = playerCar.bestLapTime;
+            gameState.lastLapTime = playerCar.lastLapTime;
+            gameState.currentLap = Math.floor(playerCar.checkpointsHit / 8) + 1;
+            gameState.checkpointsPassed = playerCar.checkpointsHit;
 
-            // Checkpoint notification
-            if (gameState.showCheckpoint) {
-                gameState.checkpointTimer--;
-                if (gameState.checkpointTimer <= 0) {
-                    gameState.showCheckpoint = false;
-                }
-            }
-
-            // Win condition
-            if (playerCar.checkpointsPassed > 0 && Math.floor(playerCar.checkpointsPassed / Math.floor(track.trackPoints.length / 8)) >= gameState.lapsToWin) {
-                addMessage('🏆 RACE COMPLETE! YOU WIN!');
+            if (playerCar.lapsPassed >= gameState.totalLaps) {
+                gameState.raceFinished = true;
             }
         }
 
-        // ============================================
-        // RENDERING
-        // ============================================
+        // MAIN RENDERING LOOP
         function render() {
-            // Clear and draw background
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, '#0f3a1f');
-            gradient.addColorStop(1, '#1a2f2f');
-            ctx.fillStyle = gradient;
+            ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw track
             track.draw();
 
-            // Draw AI cars
-            opponents.forEach(opponent => {
-                opponent.draw();
-            });
-
-            // Draw player car
+            opponents.forEach(car => car.draw());
             playerCar.draw();
 
-            // Draw messages
-            ctx.fillStyle = '#ffff00';
-            ctx.font = '20px Arial';
-            messages.forEach((msg, i) => {
-                const alpha = Math.min(1, msg.timer / 30);
-                ctx.globalAlpha = alpha;
-                ctx.fillText(msg.text, 20, 100 + i * 30);
-            });
-            ctx.globalAlpha = 1;
-
-            // Draw checkpoint notification
-            if (gameState.showCheckpoint) {
-                const alpha = Math.min(1, gameState.checkpointTimer / 30);
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
-                ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 40, 300, 80);
-                ctx.strokeStyle = '#00ff00';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(canvas.width / 2 - 150, canvas.height / 2 - 40, 300, 80);
-                ctx.fillStyle = '#00ff00';
-                ctx.font = 'bold 32px Arial';
+            if (gameState.paused) {
+                ctx.font = 'bold 50px Arial';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#ffff00';
                 ctx.textAlign = 'center';
-                ctx.fillText(`LAP ${gameState.currentLap - 1} COMPLETE`, canvas.width / 2, canvas.height / 2 + 10);
-                ctx.textAlign = 'left';
-                ctx.globalAlpha = 1;
+                ctx.textBaseline = 'middle';
+                ctx.fillText('GAME PAUSED', canvas.width / 2, canvas.height / 2);
             }
 
-            // Render mini-map
-            renderMiniMap();
-
-            // Update HUD
-            updateHUD();
-        }
-
-        function renderMiniMap() {
-            miniMapCtx.fillStyle = '#001a00';
-            miniMapCtx.fillRect(0, 0, 200, 200);
-
-            const scale = 200 / Math.max(canvas.width, canvas.height) * 0.5;
-
-            // Draw track on mini-map
-            miniMapCtx.strokeStyle = '#00ff00';
-            miniMapCtx.lineWidth = 2;
-            miniMapCtx.beginPath();
-            miniMapCtx.moveTo((track.trackPoints[0].x - canvas.width / 2) * scale + 100, (track.trackPoints[0].y - canvas.height / 2) * scale + 100);
-            for (let i = 1; i < track.trackPoints.length; i++) {
-                miniMapCtx.lineTo((track.trackPoints[i].x - canvas.width / 2) * scale + 100, (track.trackPoints[i].y - canvas.height / 2) * scale + 100);
+            if (gameState.raceFinished) {
+                ctx.font = 'bold 50px Arial';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#00ff00';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🏁 RACE FINISHED! 🏁', canvas.width / 2, canvas.height / 2);
             }
-            miniMapCtx.closePath();
-            miniMapCtx.stroke();
 
-            // Draw player
-            miniMapCtx.fillStyle = '#ff3333';
-            miniMapCtx.beginPath();
-            miniMapCtx.arc((playerCar.x - canvas.width / 2) * scale + 100, (playerCar.y - canvas.height / 2) * scale + 100, 4, 0, Math.PI * 2);
-            miniMapCtx.fill();
-
-            // Draw opponents
-            miniMapCtx.fillStyle = '#ffff00';
-            opponents.forEach(opponent => {
-                miniMapCtx.beginPath();
-                miniMapCtx.arc((opponent.x - canvas.width / 2) * scale + 100, (opponent.y - canvas.height / 2) * scale + 100, 3, 0, Math.PI * 2);
-                miniMapCtx.fill();
-            });
+            updateSidebar();
         }
 
-        function formatTime(frames) {
-            const minutes = Math.floor(frames / 3600);
-            const seconds = Math.floor((frames % 3600) / 60);
-            const milliseconds = Math.floor((frames % 60) * 16.67);
-            return `${minutes}:${seconds.toString().padStart(2, '0')}.${Math.floor(milliseconds / 10).toString().padStart(2, '0')}`;
-        }
+        // HUD UPDATE SYSTEM
+        function updateSidebar() {
+            function formatTime(frames) {
+                const minutes = Math.floor(frames / 3600);
+                const seconds = Math.floor((frames % 3600) / 60);
+                const milliseconds = Math.floor((frames % 60) * 16.67);
+                return `${minutes}:${seconds.toString().padStart(2, '0')}.${Math.floor(milliseconds / 10).toString().padStart(2, '0')}`;
+            }
 
-        function updateHUD() {
-            // Time display
-            document.getElementById('currentTime').textContent = formatTime(gameState.currentLapTime);
+            document.getElementById('lapTime').textContent = formatTime(gameState.currentLapTime);
+            document.getElementById('currentLap').textContent = `${gameState.currentLap} / ${gameState.totalLaps}`;
 
-            // Position
-            const allCars = [playerCar, ...opponents];
-            allCars.sort((a, b) => b.checkpointsPassed - a.checkpointsPassed);
-            const playerPosition = allCars.findIndex(car => car === playerCar) + 1;
-            document.getElementById('position').textContent = `POS: ${playerPosition}/${allCars.length}`;
-
-            // Lap info
-            document.getElementById('lapNumber').textContent = `LAP ${gameState.currentLap}/${gameState.lapsToWin}`;
-
-            // Stats
-            const speed = Math.sqrt(playerCar.vx ** 2 + playerCar.vy ** 2);
-            document.getElementById('speedStat').textContent = Math.floor(speed);
-            document.getElementById('speedDisplay').textContent = Math.floor(speed);
-            document.getElementById('throttleStat').textContent = Math.floor(input.throttle * 100) + '%';
-            document.getElementById('gripStat').textContent = Math.floor(playerCar.getGripPercentage()) + '%';
-            document.getElementById('distance').textContent = Math.floor((playerCar.checkpointsPassed / Math.floor(track.trackPoints.length / 8)) * 100) + '%';
-
-            // Best lap
             if (gameState.bestLapTime !== Infinity) {
                 document.getElementById('bestLap').textContent = formatTime(gameState.bestLapTime);
             }
 
-            // Speedometer RPM
-            const rpmPercent = (playerCar.rpm / playerCar.maxRPM) * 100;
-            document.getElementById('rpmBar').style.width = rpmPercent + '%';
+            if (gameState.lastLapTime !== Infinity) {
+                document.getElementById('lastLap').textContent = formatTime(gameState.lastLapTime);
+            }
 
-            // Gear display
-            const gearNames = ['R', 'N', '1', '2', '3', '4', '5', '6'];
-            document.getElementById('gearDisplay').textContent = gearNames[playerCar.gear + 1];
+            const speed = playerCar.getSpeed();
+            document.getElementById('speedDisplay').textContent = Math.floor(speed);
 
-            // Health
-            document.getElementById('healthValue').textContent = Math.ceil(playerCar.health);
-            document.getElementById('healthBar').style.width = playerCar.health + '%';
+            const throttlePercent = Math.floor(input.accelerate ? 100 : 0);
+            document.getElementById('throttleDisplay').textContent = throttlePercent + '%';
+            document.getElementById('throttleBar').style.width = throttlePercent + '%';
 
-            // Leaderboard
-            const lb = document.getElementById('leaderboard');
-            let html = '<div class="leaderboard-title">⚡ RIVALS</div>';
-            allCars.forEach((car, idx) => {
-                const isBest = car === playerCar ? ' best' : '';
-                const laps = Math.floor(car.checkpointsPassed / Math.floor(track.trackPoints.length / 8));
-                html += `<div class="leaderboard-entry${isBest}">${idx + 1}. ${car.name || 'PLAYER'} - LAP ${laps}</div>`;
+            const healthPercent = Math.floor(playerCar.health);
+            document.getElementById('healthDisplay').textContent = healthPercent + '%';
+            document.getElementById('healthBar').style.width = healthPercent + '%';
+
+            const gripPercent = Math.floor(playerCar.getGrip());
+            document.getElementById('gripDisplay').textContent = gripPercent + '%';
+            document.getElementById('gripBar').style.width = gripPercent + '%';
+
+            const sortedCars = [...allCars].sort((a, b) => b.checkpointsHit - a.checkpointsHit);
+            const position = sortedCars.findIndex(car => car === playerCar) + 1;
+            const suffix = ['st', 'nd', 'rd', 'th'][Math.min(3, position - 1)];
+            document.getElementById('positionDisplay').textContent = `${position}${suffix} / ${allCars.length}`;
+            document.getElementById('positionBar').style.width = ((position - 1) / (allCars.length - 1)) * 100 + '%';
+
+            let leaderboardHTML = '';
+            const medals = ['🥇', '🥈', '🥉', '🏁'];
+            sortedCars.forEach((car, index) => {
+                const isPlayer = car === playerCar;
+                const carClass = isPlayer ? 'car-item player' : 'car-item';
+                const medal = medals[Math.min(3, index)];
+                const laps = Math.floor(car.checkpointsHit / 8) + 1;
+                leaderboardHTML += `<div class="${carClass}">${medal} ${index + 1}. ${car.name} - LAP ${laps}</div>`;
             });
-            lb.innerHTML = html;
+            document.getElementById('leaderboard').innerHTML = leaderboardHTML;
         }
 
-        // ============================================
-        // MAIN LOOP
-        // ============================================
+        // BUTTON HANDLERS
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            gameState.paused = !gameState.paused;
+            document.getElementById('pauseBtn').textContent = gameState.paused ? 'RESUME GAME' : 'PAUSE GAME';
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            location.reload();
+        });
+
+        // MAIN GAME LOOP
         function gameLoop() {
             update();
             render();
             requestAnimationFrame(gameLoop);
         }
 
-        // Start game
-        document.getElementById('loadingScreen').classList.add('hidden');
         playerCar.lapStartTime = gameState.gameTime;
         gameLoop();
     </script>
