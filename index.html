@@ -1,1424 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VELOCITY PRO - Ultra-Realistic Racing Simulator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            display: flex;
-            background: #0a0a0a;
-        }
-
-        #mainContainer {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-
-        #gameViewport {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 50%, #0a0a14 100%);
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .hud-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .speedometer-widget {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            width: 280px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #ff0080;
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(255, 0, 128, 0.3);
-        }
-
-        .speed-display {
-            font-size: 48px;
-            font-weight: bold;
-            color: #00ff00;
-            text-align: center;
-            text-shadow: 0 0 20px #00ff00;
-            font-family: 'Courier New', monospace;
-        }
-
-        .speed-unit {
-            font-size: 14px;
-            color: #888;
-            text-align: center;
-            margin-top: 5px;
-        }
-
-        .gear-display {
-            font-size: 24px;
-            text-align: center;
-            color: #ffff00;
-            margin-top: 10px;
-            text-shadow: 0 0 10px #ffff00;
-            font-weight: bold;
-        }
-
-        .rpm-bar {
-            width: 100%;
-            height: 12px;
-            background: #222;
-            border: 1px solid #00ff00;
-            border-radius: 5px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-
-        .rpm-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff00, #ffff00, #ff6600, #ff0000);
-            width: 0%;
-            transition: width 0.05s;
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        .lap-timer {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #00ff88;
-            border-radius: 15px;
-            padding: 25px 50px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
-            min-width: 400px;
-        }
-
-        .lap-time-display {
-            font-size: 44px;
-            color: #00ff88;
-            font-weight: bold;
-            text-shadow: 0 0 20px #00ff88;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 2px;
-        }
-
-        .lap-info {
-            font-size: 13px;
-            color: #888;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-around;
-            gap: 20px;
-        }
-
-        .lap-stat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .lap-label {
-            color: #666;
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-
-        .lap-value {
-            color: #00ff88;
-            font-size: 13px;
-            font-weight: bold;
-            margin-top: 3px;
-        }
-
-        .minimap {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            width: 220px;
-            height: 220px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 3px solid #00ff88;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-        }
-
-        .minimap-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .status-panel {
-            position: absolute;
-            right: 30px;
-            bottom: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 3px solid #ff0080;
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            width: 280px;
-            box-shadow: 0 0 30px rgba(255, 0, 128, 0.3);
-        }
-
-        .status-title {
-            color: #ff0080;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            text-shadow: 0 0 10px #ff0080;
-        }
-
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-            font-size: 12px;
-        }
-
-        .status-label {
-            color: #888;
-            flex: 1;
-        }
-
-        .status-value {
-            color: #00ff88;
-            font-weight: bold;
-            min-width: 60px;
-            text-align: right;
-        }
-
-        .status-bar {
-            width: 100%;
-            height: 6px;
-            background: #222;
-            border: 1px solid #ff0080;
-            border-radius: 3px;
-            margin: 5px 0;
-            overflow: hidden;
-        }
-
-        .status-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00);
-            width: 100%;
-            transition: width 0.1s;
-        }
-
-        .leaderboard {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.85);
-            border: 3px solid #ffff00;
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            width: 280px;
-            max-height: 280px;
-            overflow-y: auto;
-            box-shadow: 0 0 30px rgba(255, 255, 0, 0.2);
-        }
-
-        .leaderboard-title {
-            color: #ffff00;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            text-shadow: 0 0 10px #ffff00;
-        }
-
-        .leaderboard-entry {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            margin: 4px 0;
-            background: rgba(255, 255, 0, 0.05);
-            border-left: 3px solid #ffff00;
-            padding-left: 10px;
-            font-size: 11px;
-            color: #ddd;
-            border-radius: 3px;
-        }
-
-        .leaderboard-entry.player {
-            background: rgba(255, 0, 128, 0.15);
-            border-left-color: #ff0080;
-            color: #ff0080;
-            font-weight: bold;
-        }
-
-        .leaderboard-pos {
-            min-width: 20px;
-            font-weight: bold;
-            color: #ffff00;
-        }
-
-        .leaderboard-name {
-            flex: 1;
-            margin-left: 8px;
-        }
-
-        .leaderboard-time {
-            color: #888;
-            font-size: 10px;
-        }
-
-        .weather-indicator {
-            position: absolute;
-            top: 30px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #00ddff;
-            border-radius: 10px;
-            padding: 10px 15px;
-            font-size: 12px;
-            color: #00ddff;
-            backdrop-filter: blur(10px);
-            max-width: 200px;
-        }
-
-        .assist-display {
-            position: absolute;
-            bottom: 320px;
-            left: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #888;
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 11px;
-            color: #888;
-            backdrop-filter: blur(10px);
-            width: 280px;
-        }
-
-        .assist-item {
-            display: flex;
-            justify-content: space-between;
-            margin: 4px 0;
-        }
-
-        .assist-on {
-            color: #00ff00;
-        }
-
-        .assist-off {
-            color: #ff0000;
-        }
-
-        .notifications {
-            position: absolute;
-            top: 130px;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 500px;
-        }
-
-        .notification {
-            background: rgba(0, 255, 0, 0.2);
-            border: 2px solid #00ff00;
-            border-radius: 10px;
-            padding: 15px 25px;
-            margin: 10px 0;
-            color: #00ff00;
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #00ff00;
-            animation: notif-slide 0.5s ease-out;
-            backdrop-filter: blur(10px);
-        }
-
-        @keyframes notif-slide {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .controls-info {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #666;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 11px;
-            color: #888;
-            text-align: center;
-            backdrop-filter: blur(5px);
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #ff0080;
-            border-radius: 3px;
-        }
-
-        .damage-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 15px solid rgba(255, 0, 0, 0);
-            box-shadow: inset 0 0 100px rgba(255, 0, 0, 0);
-            pointer-events: none;
-            transition: all 0.3s;
-        }
-
-        .damage-overlay.heavy {
-            border-color: rgba(255, 0, 0, 0.3);
-            box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.3);
-        }
-
-        .fuel-warning {
-            position: absolute;
-            top: 200px;
-            right: 30px;
-            background: rgba(255, 100, 0, 0.3);
-            border: 2px solid #ff6400;
-            border-radius: 10px;
-            padding: 15px;
-            color: #ff6400;
-            font-size: 12px;
-            font-weight: bold;
-            animation: pulse 1s infinite;
-            backdrop-filter: blur(10px);
-            display: none;
-        }
-
-        .fuel-warning.active {
-            display: block;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .tire-temps {
-            position: absolute;
-            bottom: 150px;
-            right: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #ff9900;
-            border-radius: 10px;
-            padding: 12px;
-            font-size: 10px;
-            color: #ff9900;
-            backdrop-filter: blur(10px);
-            width: 220px;
-        }
-
-        .tire-temp-item {
-            display: flex;
-            justify-content: space-between;
-            margin: 4px 0;
-            font-family: 'Courier New', monospace;
-        }
-
-        .tire-name {
-            width: 50px;
-        }
-
-        .tire-temp {
-            text-align: right;
-            flex: 1;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Pong Game</title>
+<style>
+    body {
+        margin: 0;
+        background: black;
+        color: white;
+        font-family: Arial;
+        text-align: center;
+    }
+    canvas {
+        display: none;
+        margin: auto;
+        background: black;
+        border: 2px solid white;
+    }
+    #menu {
+        margin-top: 100px;
+    }
+    button {
+        padding: 15px 30px;
+        font-size: 20px;
+        margin: 10px;
+        cursor: pointer;
+    }
+</style>
 </head>
 <body>
-    <div id="mainContainer">
-        <div id="gameViewport">
-            <canvas id="gameCanvas"></canvas>
-            <div class="hud-container">
-                <div class="weather-indicator" id="weatherIndicator">🌤️ Clear</div>
-                
-                <div class="lap-timer">
-                    <div class="lap-time-display" id="lapTimeDisplay">00:00.000</div>
-                    <div class="lap-info">
-                        <div class="lap-stat">
-                            <span class="lap-label">Current Lap</span>
-                            <span class="lap-value" id="currentLapDisplay">1 / 3</span>
-                        </div>
-                        <div class="lap-stat">
-                            <span class="lap-label">Best Lap</span>
-                            <span class="lap-value" id="bestLapDisplay">--:--</span>
-                        </div>
-                        <div class="lap-stat">
-                            <span class="lap-label">Position</span>
-                            <span class="lap-value" id="positionDisplay">1st</span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="minimap">
-                    <canvas id="minimapCanvas" class="minimap-canvas"></canvas>
-                </div>
+<div id="menu">
+    <h1>PONG</h1>
+    <button onclick="startGame('solo')">Solo (vs AI)</button>
+    <button onclick="startGame('multi')">Multiplayer</button>
+</div>
+
+<canvas id="gameCanvas" width="800" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let gameMode = "solo";
+
+// Paddle settings
+const paddleWidth = 10;
+const paddleHeight = 100;
+
+// Left paddle (Player 1)
+let leftY = 200;
+
+// Right paddle (Player 2 / AI)
+let rightY = 200;
+
+// Ball
+let ballX = 400;
+let ballY = 250;
+let ballSpeedX = 10; // FAST
+let ballSpeedY = 6;
+
+// Controls
+let wPressed = false;
+let sPressed = false;
+let upPressed = false;
+let downPressed = false;
+
+function startGame(mode) {
+    gameMode = mode;
+    document.getElementById("menu").style.display = "none";
+    canvas.style.display = "block";
+    resetBall();
+    gameLoop();
+}
+
+function resetBall() {
+    ballX = canvas.width / 2;
+    ballY = canvas.height / 2;
+    ballSpeedX = (Math.random() > 0.5 ? 10 : -10);
+    ballSpeedY = (Math.random() * 6) - 3;
+}
+
+// Controls
+document.addEventListener("keydown", (e) => {
+    if (e.key === "w") wPressed = true;
+    if (e.key === "s") sPressed = true;
+    if (e.key === "ArrowUp") upPressed = true;
+    if (e.key === "ArrowDown") downPressed = true;
+});
+
+document.addEventListener("keyup", (e) => {
+    if (e.key === "w") wPressed = false;
+    if (e.key === "s") sPressed = false;
+    if (e.key === "ArrowUp") upPressed = false;
+    if (e.key === "ArrowDown") downPressed = false;
+});
+
+function update() {
+    // Player 1 movement
+    if (wPressed) leftY -= 8;
+    if (sPressed) leftY += 8;
+
+    // Clamp
+    leftY = Math.max(0, Math.min(canvas.height - paddleHeight, leftY));
+
+    // Player 2 or AI
+    if (gameMode === "multi") {
+        if (upPressed) rightY -= 8;
+        if (downPressed) rightY += 8;
+    } else {
+        // PERFECT AI (never misses)
+        rightY = ballY - paddleHeight / 2;
+    }
+
+    rightY = Math.max(0, Math.min(canvas.height - paddleHeight, rightY));
+
+    // Ball movement
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+
+    // Top & bottom bounce
+    if (ballY <= 0 || ballY >= canvas.height) {
+        ballSpeedY *= -1;
+    }
+
+    // Left paddle collision
+    if (
+        ballX <= paddleWidth &&
+        ballY >= leftY &&
+        ballY <= leftY + paddleHeight
+    ) {
+        ballSpeedX *= -1;
+    }
+
+    // Right paddle collision
+    if (
+        ballX >= canvas.width - paddleWidth &&
+        ballY >= rightY &&
+        ballY <= rightY + paddleHeight
+    ) {
+        ballSpeedX *= -1;
+    }
+
+    // Score reset
+    if (ballX < 0 || ballX > canvas.width) {
+        resetBall();
+    }
+}
+
+function draw() {
+    // Clear
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Paddles
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, leftY, paddleWidth, paddleHeight);
+    ctx.fillRect(canvas.width - paddleWidth, rightY, paddleWidth, paddleHeight);
+
+    // Ball
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+</script>
 
-                <div class="leaderboard" id="leaderboard">
-                    <div class="leaderboard-title">🏎️ LEADERBOARD</div>
-                </div>
-
-                <div class="speedometer-widget">
-                    <div class="speed-display" id="speedDisplay">0</div>
-                    <div class="speed-unit">KM/H</div>
-                    <div class="gear-display" id="gearDisplay">N</div>
-                    <div class="rpm-bar">
-                        <div class="rpm-fill" id="rpmFill"></div>
-                    </div>
-                </div>
-
-                <div class="assist-display">
-                    <div style="color: #ffff00; font-weight: bold; margin-bottom: 8px;">ASSISTS</div>
-                    <div class="assist-item">
-                        <span>ABS:</span>
-                        <span class="assist-on">ON</span>
-                    </div>
-                    <div class="assist-item">
-                        <span>TCS:</span>
-                        <span class="assist-on">ON</span>
-                    </div>
-                    <div class="assist-item">
-                        <span>ESC:</span>
-                        <span class="assist-on">ON</span>
-                    </div>
-                    <div class="assist-item">
-                        <span>AID:</span>
-                        <span class="assist-on">ON</span>
-                    </div>
-                </div>
-
-                <div class="status-panel">
-                    <div class="status-title">VEHICLE STATUS</div>
-                    <div class="status-item">
-                        <span class="status-label">HEALTH</span>
-                        <span class="status-value" id="healthValue">100%</span>
-                    </div>
-                    <div class="status-bar">
-                        <div class="status-bar-fill" id="healthBar"></div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">FUEL</span>
-                        <span class="status-value" id="fuelValue">100%</span>
-                    </div>
-                    <div class="status-bar">
-                        <div class="status-bar-fill" id="fuelBar"></div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">GRIP</span>
-                        <span class="status-value" id="gripValue">100%</span>
-                    </div>
-                    <div class="status-bar">
-                        <div class="status-bar-fill" id="gripBar"></div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-label">BOOST</span>
-                        <span class="status-value" id="boostValue">0%</span>
-                    </div>
-                    <div class="status-bar">
-                        <div class="status-bar-fill" id="boostBar"></div>
-                    </div>
-                </div>
-
-                <div class="tire-temps" id="tireTemps">
-                    <strong style="display: block; margin-bottom: 8px;">TIRE TEMPS</strong>
-                    <div class="tire-temp-item">
-                        <span class="tire-name">FL:</span>
-                        <span class="tire-temp" id="tireFL">80°C</span>
-                    </div>
-                    <div class="tire-temp-item">
-                        <span class="tire-name">FR:</span>
-                        <span class="tire-temp" id="tireFR">80°C</span>
-                    </div>
-                    <div class="tire-temp-item">
-                        <span class="tire-name">RL:</span>
-                        <span class="tire-temp" id="tireRL">80°C</span>
-                    </div>
-                    <div class="tire-temp-item">
-                        <span class="tire-name">RR:</span>
-                        <span class="tire-temp" id="tireRR">80°C</span>
-                    </div>
-                </div>
-
-                <div class="fuel-warning" id="fuelWarning">
-                    ⚠️ LOW FUEL - PIT STOP REQUIRED
-                </div>
-
-                <div class="notifications" id="notifications"></div>
-
-                <div class="damage-overlay" id="damageOverlay"></div>
-
-                <div class="controls-info">
-                    🎮 WASD/ARROWS: Steer | SPACE: Handbrake | SHIFT: Nitro | L: Lights | P: Pause | R: Restart
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ============================================
-        // VELOCITY PRO - ULTRA-REALISTIC RACING SIMULATOR
-        // GRAN TURISMO 7 + MINECRAFT ICE BOAT HYBRID
-        // 5000+ LINES OF ADVANCED RACING CODE
-        // ============================================
-
-        class VelocityPro {
-            constructor() {
-                this.canvas = document.getElementById('gameCanvas');
-                this.ctx = this.canvas.getContext('2d', { antialias: true, alpha: false });
-                this.minimapCanvas = document.getElementById('minimapCanvas');
-                this.minimapCtx = this.minimapCanvas.getContext('2d');
-                
-                this.resizeCanvas();
-                window.addEventListener('resize', () => this.resizeCanvas());
-
-                this.gameState = {
-                    paused: false,
-                    gameTime: 0,
-                    deltaTime: 0,
-                    lastFrameTime: performance.now(),
-                    weather: 'clear',
-                    trackTemp: 25,
-                    ambientTemp: 20
-                };
-
-                this.lapState = {
-                    currentLap: 1,
-                    totalLaps: 3,
-                    currentLapTime: 0,
-                    bestLapTime: Infinity,
-                    lastLapTime: Infinity,
-                    lapStartTime: 0,
-                    checkpointsHit: 0,
-                    lastCheckpoint: -1
-                };
-
-                this.input = {
-                    left: false,
-                    right: false,
-                    accelerate: false,
-                    brake: false,
-                    handbrake: false,
-                    nitro: false,
-                    lights: false
-                };
-
-                this.setupInputHandling();
-                this.initializeGame();
-                this.gameLoop();
-            }
-
-            resizeCanvas() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-                this.minimapCanvas.width = 220;
-                this.minimapCanvas.height = 220;
-            }
-
-            setupInputHandling() {
-                const keyMap = {
-                    'w': 'accelerate',
-                    'arrowup': 'accelerate',
-                    's': 'brake',
-                    'arrowdown': 'brake',
-                    'a': 'left',
-                    'arrowleft': 'left',
-                    'd': 'right',
-                    'arrowright': 'right',
-                    ' ': 'handbrake',
-                    'shift': 'nitro',
-                    'l': 'lights',
-                    'p': 'pause',
-                    'r': 'restart'
-                };
-
-                window.addEventListener('keydown', (e) => {
-                    const key = e.key.toLowerCase();
-                    if (keyMap[key]) {
-                        e.preventDefault();
-                        const action = keyMap[key];
-                        
-                        if (action === 'pause') {
-                            this.gameState.paused = !this.gameState.paused;
-                        } else if (action === 'restart') {
-                            location.reload();
-                        } else {
-                            this.input[action] = true;
-                        }
-                    }
-                });
-
-                window.addEventListener('keyup', (e) => {
-                    const key = e.key.toLowerCase();
-                    if (keyMap[key]) {
-                        const action = keyMap[key];
-                        if (action !== 'pause' && action !== 'restart') {
-                            this.input[action] = false;
-                        }
-                    }
-                });
-            }
-
-            initializeGame() {
-                this.track = new AdvancedTrack(this.canvas.width, this.canvas.height);
-                this.player = new RaceCar(
-                    this.track.startPos.x,
-                    this.track.startPos.y,
-                    true,
-                    'PLAYER'
-                );
-                
-                this.opponents = [
-                    new RaceCar(
-                        this.track.startPos.x + 100,
-                        this.track.startPos.y,
-                        false,
-                        'AI_1'
-                    ),
-                    new RaceCar(
-                        this.track.startPos.x - 100,
-                        this.track.startPos.y,
-                        false,
-                        'AI_2'
-                    ),
-                    new RaceCar(
-                        this.track.startPos.x + 50,
-                        this.track.startPos.y + 100,
-                        false,
-                        'AI_3'
-                    )
-                ];
-
-                this.allCars = [this.player, ...this.opponents];
-                this.particles = [];
-                this.lapState.lapStartTime = this.gameState.gameTime;
-            }
-
-            update(deltaTime) {
-                if (this.gameState.paused) return;
-
-                this.gameState.deltaTime = deltaTime;
-                this.gameState.gameTime += deltaTime;
-
-                // Update player car
-                this.player.update(this.input, this.track, deltaTime, this.gameState);
-                
-                // Update AI opponents
-                this.opponents.forEach(opponent => {
-                    opponent.updateAI(this.track, this.player, deltaTime, this.gameState);
-                });
-
-                // Update lap timing
-                this.lapState.currentLapTime = this.gameState.gameTime - this.lapState.lapStartTime;
-
-                // Check checkpoints
-                this.checkCheckpoints();
-
-                // Update particles
-                this.particles = this.particles.filter(p => p.life > 0);
-                this.particles.forEach(p => p.update(deltaTime));
-
-                // Update UI
-                this.updateHUD();
-            }
-
-            checkCheckpoints() {
-                const checkpointZone = 80;
-                
-                for (let checkpoint of this.track.checkpoints) {
-                    const dist = Math.hypot(
-                        this.player.x - checkpoint.x,
-                        this.player.y - checkpoint.y
-                    );
-
-                    if (dist < checkpointZone) {
-                        if (checkpoint.id !== this.lapState.lastCheckpoint) {
-                            this.lapState.lastCheckpoint = checkpoint.id;
-                            this.lapState.checkpointsHit++;
-
-                            if (checkpoint.isStart && this.lapState.checkpointsHit > 1) {
-                                // Lap completed
-                                this.completeLap();
-                            }
-                        }
-                    }
-                }
-            }
-
-            completeLap() {
-                this.lapState.lastLapTime = this.lapState.currentLapTime;
-                
-                if (this.lapState.currentLapTime < this.lapState.bestLapTime) {
-                    this.lapState.bestLapTime = this.lapState.currentLapTime;
-                    this.showNotification('🏆 NEW BEST LAP!');
-                }
-
-                this.lapState.currentLap++;
-                this.lapState.lapStartTime = this.gameState.gameTime;
-                this.lapState.currentLapTime = 0;
-                this.lapState.lastCheckpoint = -1;
-            }
-
-            render() {
-                // Clear and draw background
-                this.ctx.fillStyle = '#000';
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // Draw track with advanced rendering
-                this.track.render(this.ctx, this.gameState);
-
-                // Draw particle effects
-                this.particles.forEach(p => p.render(this.ctx));
-
-                // Draw all cars
-                this.opponents.forEach(car => car.render(this.ctx));
-                this.player.render(this.ctx);
-
-                // Draw minimap
-                this.renderMinimap();
-            }
-
-            renderMinimap() {
-                this.minimapCtx.fillStyle = '#0a0a0a';
-                this.minimapCtx.fillRect(0, 0, 220, 220);
-
-                // Draw track
-                this.minimapCtx.strokeStyle = '#00ff88';
-                this.minimapCtx.lineWidth = 2;
-                this.minimapCtx.beginPath();
-                
-                const scale = 0.15;
-                for (let i = 0; i < this.track.pathPoints.length; i++) {
-                    const pt = this.track.pathPoints[i];
-                    const x = 110 + (pt.x - this.player.x) * scale;
-                    const y = 110 + (pt.y - this.player.y) * scale;
-                    
-                    if (i === 0) this.minimapCtx.moveTo(x, y);
-                    else this.minimapCtx.lineTo(x, y);
-                }
-                this.minimapCtx.closePath();
-                this.minimapCtx.stroke();
-
-                // Draw player
-                const px = 110 + (this.player.x - this.player.x) * scale;
-                const py = 110 + (this.player.y - this.player.y) * scale;
-                this.minimapCtx.fillStyle = '#ff0080';
-                this.minimapCtx.beginPath();
-                this.minimapCtx.arc(px, py, 5, 0, Math.PI * 2);
-                this.minimapCtx.fill();
-
-                // Draw opponents
-                this.minimapCtx.fillStyle = '#ffff00';
-                this.opponents.forEach(opponent => {
-                    const ox = 110 + (opponent.x - this.player.x) * scale;
-                    const oy = 110 + (opponent.y - this.player.y) * scale;
-                    this.minimapCtx.beginPath();
-                    this.minimapCtx.arc(ox, oy, 3, 0, Math.PI * 2);
-                    this.minimapCtx.fill();
-                });
-            }
-
-            updateHUD() {
-                const speed = this.player.getSpeed();
-                const rpm = this.player.getRPM();
-                const gear = this.player.getGear();
-
-                // Speed display
-                document.getElementById('speedDisplay').textContent = Math.floor(speed);
-                
-                // Gear display
-                const gearNames = ['R', 'N', '1', '2', '3', '4', '5', '6'];
-                document.getElementById('gearDisplay').textContent = gearNames[gear + 1];
-
-                // RPM bar
-                const rpmPercent = (rpm / this.player.maxRPM) * 100;
-                document.getElementById('rpmFill').style.width = rpmPercent + '%';
-
-                // Lap time
-                const lapTime = this.formatTime(this.lapState.currentLapTime);
-                document.getElementById('lapTimeDisplay').textContent = lapTime;
-
-                // Lap info
-                document.getElementById('currentLapDisplay').textContent = 
-                    `${this.lapState.currentLap} / ${this.lapState.totalLaps}`;
-
-                if (this.lapState.bestLapTime !== Infinity) {
-                    const bestLap = this.formatTime(this.lapState.bestLapTime);
-                    document.getElementById('bestLapDisplay').textContent = bestLap;
-                }
-
-                // Position
-                const sorted = [...this.allCars].sort((a, b) => b.checkpointsHit - a.checkpointsHit);
-                const position = sorted.findIndex(car => car === this.player) + 1;
-                const suffix = ['st', 'nd', 'rd', 'th'][Math.min(3, position - 1)];
-                document.getElementById('positionDisplay').textContent = position + suffix;
-
-                // Vehicle status
-                document.getElementById('healthValue').textContent = Math.floor(this.player.health) + '%';
-                document.getElementById('healthBar').style.width = this.player.health + '%';
-
-                document.getElementById('fuelValue').textContent = Math.floor(this.player.fuel) + '%';
-                document.getElementById('fuelBar').style.width = this.player.fuel + '%';
-
-                const grip = Math.max(0, 100 - this.player.tireWear);
-                document.getElementById('gripValue').textContent = Math.floor(grip) + '%';
-                document.getElementById('gripBar').style.width = grip + '%';
-
-                document.getElementById('boostValue').textContent = Math.floor(this.player.nitroFuel) + '%';
-                document.getElementById('boostBar').style.width = this.player.nitroFuel + '%';
-
-                // Tire temps
-                document.getElementById('tireFL').textContent = Math.floor(this.player.tires[0].temp) + '°C';
-                document.getElementById('tireFR').textContent = Math.floor(this.player.tires[1].temp) + '°C';
-                document.getElementById('tireRL').textContent = Math.floor(this.player.tires[2].temp) + '°C';
-                document.getElementById('tireRR').textContent = Math.floor(this.player.tires[3].temp) + '°C';
-
-                // Fuel warning
-                if (this.player.fuel < 15) {
-                    document.getElementById('fuelWarning').classList.add('active');
-                } else {
-                    document.getElementById('fuelWarning').classList.remove('active');
-                }
-
-                // Damage overlay
-                if (this.player.health < 50) {
-                    document.getElementById('damageOverlay').classList.add('heavy');
-                } else {
-                    document.getElementById('damageOverlay').classList.remove('heavy');
-                }
-
-                // Leaderboard
-                this.updateLeaderboard(sorted);
-            }
-
-            updateLeaderboard(sorted) {
-                let html = '<div class="leaderboard-title">🏎️ LEADERBOARD</div>';
-                const medals = ['🥇', '🥈', '🥉', '4️⃣'];
-
-                sorted.forEach((car, idx) => {
-                    const medal = medals[Math.min(3, idx)];
-                    const lapCount = Math.floor(car.checkpointsHit / this.track.checkpointsPerLap);
-                    const isPlayer = car === this.player;
-                    const className = isPlayer ? 'leaderboard-entry player' : 'leaderboard-entry';
-                    
-                    html += `
-                        <div class="${className}">
-                            <span class="leaderboard-pos">${medal}</span>
-                            <span class="leaderboard-name">${car.name}</span>
-                            <span class="leaderboard-time">LAP ${lapCount}</span>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('leaderboard').innerHTML = html;
-            }
-
-            showNotification(message) {
-                const notif = document.createElement('div');
-                notif.className = 'notification';
-                notif.textContent = message;
-                document.getElementById('notifications').appendChild(notif);
-
-                setTimeout(() => notif.remove(), 3000);
-            }
-
-            formatTime(ms) {
-                const frames = Math.floor(ms / 16);
-                const minutes = Math.floor(frames / 3600);
-                const seconds = Math.floor((frames % 3600) / 60);
-                const milliseconds = Math.floor((frames % 60) * 16.67);
-                return `${minutes}:${seconds.toString().padStart(2, '0')}.${Math.floor(milliseconds / 10).toString().padStart(2, '0')}`;
-            }
-
-            gameLoop = (currentTime = performance.now()) => {
-                const deltaTime = Math.min(16, currentTime - this.gameState.lastFrameTime);
-                this.gameState.lastFrameTime = currentTime;
-
-                this.update(deltaTime);
-                this.render();
-
-                requestAnimationFrame(this.gameLoop);
-            }
-        }
-
-        // ============================================
-        // ADVANCED TRACK SYSTEM
-        // ============================================
-        class AdvancedTrack {
-            constructor(width, height) {
-                this.width = width;
-                this.height = height;
-                this.trackWidth = 180;
-                this.pathPoints = [];
-                this.checkpoints = [];
-                this.checkpointsPerLap = 12;
-                this.generateTrack();
-                this.startPos = { x: this.pathPoints[0].x, y: this.pathPoints[0].y };
-            }
-
-            generateTrack() {
-                // Complex Bézier curve-based circuit
-                const centerX = this.width / 2;
-                const centerY = this.height / 2;
-
-                const controlPoints = [
-                    { x: centerX, y: centerY - 250 },
-                    { x: centerX + 300, y: centerY - 200 },
-                    { x: centerX + 350, y: centerY - 50 },
-                    { x: centerX + 300, y: centerY + 150 },
-                    { x: centerX + 100, y: centerY + 300 },
-                    { x: centerX - 100, y: centerY + 300 },
-                    { x: centerX - 300, y: centerY + 150 },
-                    { x: centerX - 350, y: centerY - 50 },
-                    { x: centerX - 300, y: centerY - 200 }
-                ];
-
-                // Catmull-Rom spline interpolation
-                this.pathPoints = [];
-                for (let i = 0; i < controlPoints.length; i++) {
-                    const p0 = controlPoints[(i - 1 + controlPoints.length) % controlPoints.length];
-                    const p1 = controlPoints[i];
-                    const p2 = controlPoints[(i + 1) % controlPoints.length];
-                    const p3 = controlPoints[(i + 2) % controlPoints.length];
-
-                    for (let t = 0; t < 1; t += 0.02) {
-                        const point = this.catmullRom(p0, p1, p2, p3, t);
-                        this.pathPoints.push(point);
-                    }
-                }
-
-                // Create checkpoints
-                const checkpointInterval = Math.floor(this.pathPoints.length / this.checkpointsPerLap);
-                for (let i = 0; i < this.checkpointsPerLap; i++) {
-                    const idx = (i * checkpointInterval) % this.pathPoints.length;
-                    this.checkpoints.push({
-                        x: this.pathPoints[idx].x,
-                        y: this.pathPoints[idx].y,
-                        id: i,
-                        isStart: i === 0
-                    });
-                }
-            }
-
-            catmullRom(p0, p1, p2, p3, t) {
-                const t2 = t * t;
-                const t3 = t2 * t;
-
-                const v0x = (p2.x - p0.x) * 0.5;
-                const v1x = (p3.x - p1.x) * 0.5;
-                const x = p1.x + v0x * t + (3 * (p2.x - p1.x) - 2 * v0x - v1x) * t2 + 
-                    (2 * (p1.x - p2.x) + v0x + v1x) * t3;
-
-                const v0y = (p2.y - p0.y) * 0.5;
-                const v1y = (p3.y - p1.y) * 0.5;
-                const y = p1.y + v0y * t + (3 * (p2.y - p1.y) - 2 * v0y - v1y) * t2 + 
-                    (2 * (p1.y - p2.y) + v0y + v1y) * t3;
-
-                return { x, y };
-            }
-
-            isOnTrack(x, y) {
-                let minDist = Infinity;
-                for (let point of this.pathPoints) {
-                    const dist = Math.hypot(x - point.x, y - point.y);
-                    minDist = Math.min(minDist, dist);
-                }
-                return minDist < this.trackWidth / 2 + 50;
-            }
-
-            render(ctx, gameState) {
-                // Grass background
-                const gradient = ctx.createLinearGradient(0, 0, this.width, this.height);
-                gradient.addColorStop(0, '#0a2a0a');
-                gradient.addColorStop(0.5, '#0f3f0f');
-                gradient.addColorStop(1, '#1a3a1a');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, this.width, this.height);
-
-                // Track asphalt
-                ctx.strokeStyle = '#1a1a1a';
-                ctx.lineWidth = this.trackWidth;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.beginPath();
-                ctx.moveTo(this.pathPoints[0].x, this.pathPoints[0].y);
-                for (let i = 1; i < this.pathPoints.length; i++) {
-                    ctx.lineTo(this.pathPoints[i].x, this.pathPoints[i].y);
-                }
-                ctx.closePath();
-                ctx.stroke();
-
-                // Track center line
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-                ctx.lineWidth = 4;
-                ctx.setLineDash([30, 20]);
-                ctx.beginPath();
-                ctx.moveTo(this.pathPoints[0].x, this.pathPoints[0].y);
-                for (let i = 1; i < this.pathPoints.length; i++) {
-                    ctx.lineTo(this.pathPoints[i].x, this.pathPoints[i].y);
-                }
-                ctx.closePath();
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                // Checkpoints
-                for (let checkpoint of this.checkpoints) {
-                    ctx.fillStyle = checkpoint.isStart ? 
-                        'rgba(255, 200, 0, 0.4)' : 'rgba(0, 255, 0, 0.3)';
-                    ctx.fillRect(checkpoint.x - 90, checkpoint.y - 30, 180, 60);
-
-                    if (checkpoint.isStart) {
-                        // Start/finish line checkerboard
-                        for (let i = 0; i < 12; i++) {
-                            for (let j = 0; j < 2; j++) {
-                                ctx.fillStyle = (i + j) % 2 === 0 ? '#fff' : '#000';
-                                ctx.fillRect(checkpoint.x - 90 + i * 15, checkpoint.y - 30 + j * 30, 15, 30);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // ============================================
-        // ADVANCED RACE CAR PHYSICS
-        // ============================================
-        class RaceCar {
-            constructor(x, y, isPlayer, name) {
-                this.x = x;
-                this.y = y;
-                this.isPlayer = isPlayer;
-                this.name = name;
-
-                // Physics
-                this.vx = 0;
-                this.vy = 0;
-                this.angle = 0;
-                this.angularVel = 0;
-
-                // Car properties
-                this.mass = 1500;
-                this.width = 24;
-                this.height = 44;
-                this.maxSpeed = 320;
-                this.acceleration = 0.6;
-                this.brakePower = 0.25;
-                this.turnRadius = 0.12;
-                this.color = isPlayer ? '#ff0080' : `hsl(${Math.random() * 360}, 100%, 50%)`;
-
-                // Engine
-                this.rpm = 0;
-                this.maxRPM = 8000;
-                this.gear = 0;
-                this.throttle = 0;
-                this.isBraking = false;
-                this.isHandbraking = false;
-
-                // Performance
-                this.health = 100;
-                this.fuel = 100;
-                this.nitroFuel = 100;
-                this.boost = 1;
-                this.tireWear = 0;
-
-                // Tires (FL, FR, RL, RR)
-                this.tires = [
-                    new Tire(), new Tire(), new Tire(), new Tire()
-                ];
-
-                // Lap data
-                this.checkpointsHit = 0;
-                this.lapCount = 0;
-
-                // AI
-                this.isAI = !isPlayer;
-                this.targetSpeed = 280;
-            }
-
-            update(input, track, deltaTime, gameState) {
-                if (this.isPlayer) {
-                    this.handleInput(input);
-                }
-
-                // Physics simulation
-                this.updatePhysics(track, deltaTime);
-
-                // Engine simulation
-                this.updateEngine(deltaTime);
-
-                // Tire simulation
-                this.tires.forEach(tire => tire.update(this.throttle, deltaTime));
-
-                // Fuel consumption
-                this.fuel = Math.max(0, this.fuel - this.throttle * 0.02);
-
-                // Health decay (off-track damage)
-                if (!track.isOnTrack(this.x, this.y)) {
-                    this.health -= 0.3;
-                    this.tireWear += 0.5;
-                }
-
-                // Nitro consumption
-                if (this.isNitroActive && this.nitroFuel > 0) {
-                    this.nitroFuel -= 0.5;
-                } else {
-                    this.isNitroActive = false;
-                    this.nitroFuel = Math.min(100, this.nitroFuel + 0.1);
-                }
-
-                this.health = Math.max(0, Math.min(100, this.health));
-            }
-
-            handleInput(input) {
-                this.throttle = input.accelerate ? 1 : 0;
-                this.isBraking = input.brake;
-                this.isHandbraking = input.handbrake;
-                
-                let steer = 0;
-                if (input.left) steer -= 1;
-                if (input.right) steer += 1;
-
-                const speed = this.getSpeed();
-                const steerFactor = Math.max(0.2, 1 - speed / this.maxSpeed);
-                this.angularVel = steer * this.turnRadius * steerFactor;
-
-                if (input.nitro && this.nitroFuel > 0) {
-                    this.isNitroActive = true;
-                }
-
-                this.gear = input.accelerate ? 1 : input.brake ? -1 : 0;
-            }
-
-            updateAI(track, player, deltaTime, gameState) {
-                // Find nearest track point
-                let nearest = track.pathPoints[0];
-                let minDist = Infinity;
-                
-                for (let point of track.pathPoints) {
-                    const dist = Math.hypot(this.x - point.x, this.y - point.y);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        nearest = point;
-                    }
-                }
-
-                // Steer towards track
-                const angle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
-                let diff = angle - this.angle;
-                while (diff > Math.PI) diff -= Math.PI * 2;
-                while (diff < -Math.PI) diff += Math.PI * 2;
-
-                const speed = this.getSpeed();
-                const steerFactor = Math.max(0.2, 1 - speed / this.maxSpeed);
-                this.angularVel = Math.max(-1, Math.min(1, diff * 2)) * this.turnRadius * steerFactor;
-
-                // Throttle control
-                this.throttle = speed < this.targetSpeed * 0.9 ? 1 : 0.3;
-                this.isBraking = Math.abs(diff) > 0.8;
-                this.isHandbraking = Math.abs(diff) > 1.2;
-                this.gear = 1;
-            }
-
-            updatePhysics(track, deltaTime) {
-                const speed = this.getSpeed();
-
-                // Acceleration
-                if (this.throttle > 0 && this.fuel > 0) {
-                    const accel = this.acceleration * this.throttle * (this.isNitroActive ? 1.5 : 1);
-                    this.vx += Math.cos(this.angle) * accel;
-                    this.vy += Math.sin(this.angle) * accel;
-                }
-
-                // Braking
-                if (this.isBraking && speed > 0.5) {
-                    const brakeFactor = this.isHandbraking ? 1.3 : 1;
-                    const mag = Math.sqrt(this.vx ** 2 + this.vy ** 2);
-                    this.vx -= (this.vx / mag) * this.brakePower * brakeFactor;
-                    this.vy -= (this.vy / mag) * this.brakePower * brakeFactor;
-                }
-
-                // Drag and friction
-                this.vx *= 0.98;
-                this.vy *= 0.98;
-
-                // Speed limiter
-                if (speed > this.maxSpeed * (this.isNitroActive ? 1.2 : 1)) {
-                    const scale = (this.maxSpeed * (this.isNitroActive ? 1.2 : 1)) / speed;
-                    this.vx *= scale;
-                    this.vy *= scale;
-                }
-
-                // Update position
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Update angle
-                this.angle += this.angularVel;
-                this.angularVel *= 0.9;
-            }
-
-            updateEngine(deltaTime) {
-                const speed = this.getSpeed();
-                const speedPercent = Math.min(1, speed / this.maxSpeed);
-                
-                this.rpm = speedPercent * this.maxRPM * Math.max(0, this.throttle);
-                
-                // Tire wear increases with throttle and turning
-                this.tireWear += (this.throttle * 0.1 + Math.abs(this.angularVel) * 0.05);
-                this.tireWear = Math.min(100, this.tireWear);
-            }
-
-            getSpeed() {
-                return Math.hypot(this.vx, this.vy) * 2.237; // Convert to km/h
-            }
-
-            getRPM() {
-                return this.rpm;
-            }
-
-            getGear() {
-                return this.gear;
-            }
-
-            render(ctx) {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-
-                // Car body
-                ctx.fillStyle = this.color;
-                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-
-                // Car highlight
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
-
-                // Windshield
-                ctx.fillStyle = 'rgba(100, 150, 255, 0.3)';
-                ctx.fillRect(-this.width / 2 + 2, -this.height / 2 + 3, this.width - 4, 12);
-
-                // Direction indicator
-                ctx.strokeStyle = '#ffff00';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.lineTo(0, -this.height / 2 - 5);
-                ctx.stroke();
-
-                // Drift smoke
-                const drift = Math.abs(this.angle - Math.atan2(this.vy, this.vx));
-                if (drift > 0.3 && this.getSpeed() > 100) {
-                    ctx.fillStyle = `rgba(200, 200, 200, ${Math.min(0.7, drift / 2)})`;
-                    ctx.beginPath();
-                    ctx.arc(-this.width / 2 - 3, this.height / 2 + 3, 5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(this.width / 2 + 3, this.height / 2 + 3, 5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                ctx.restore();
-
-                // Health bar
-                ctx.fillStyle = '#333';
-                ctx.fillRect(this.x - 20, this.y - this.height / 2 - 30, 40, 6);
-
-                ctx.fillStyle = this.health > 50 ? '#00ff00' : this.health > 25 ? '#ffff00' : '#ff0000';
-                ctx.fillRect(this.x - 20, this.y - this.height / 2 - 30, 40 * (this.health / 100), 6);
-            }
-        }
-
-        class Tire {
-            constructor() {
-                this.temp = 80;
-                this.wear = 0;
-                this.grip = 1;
-            }
-
-            update(throttle, deltaTime) {
-                this.temp = Math.min(120, this.temp + throttle * 0.5);
-                this.temp = Math.max(80, this.temp - 0.1);
-                this.wear = Math.min(100, this.wear + throttle * 0.05);
-                this.grip = 1 - this.wear / 200;
-            }
-        }
-
-        class Particle {
-            constructor(x, y, vx, vy, life) {
-                this.x = x;
-                this.y = y;
-                this.vx = vx;
-                this.vy = vy;
-                this.life = life;
-                this.maxLife = life;
-            }
-
-            update(deltaTime) {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += 0.1; // Gravity
-                this.life -= deltaTime;
-            }
-
-            render(ctx) {
-                const alpha = this.life / this.maxLife;
-                ctx.fillStyle = `rgba(255, 200, 100, ${alpha * 0.6})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        // Initialize game
-        const game = new VelocityPro();
-    </script>
 </body>
 </html>
